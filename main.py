@@ -20,11 +20,11 @@ n = 5       #liczba detektorow
 l = 30      #rozpietosc, pewnie trzeba ogarnac zeby bylo w radianach
 alpha = 0   #kat ustawienia emitera, tez pewnie trzeba radiany
 
-img = mpimg.imread("test/CT_ScoutView.jpg")
+img = mpimg.imread("test/Shepp_logan.png")
 plt.imshow(img, cmap='gray')
 plt.show()
-
-height, width = img.shape
+print(img.shape)
+height, width = img.shape[:2]
 r = math.ceil(math.sqrt((height ** 2 + width ** 2)) / 2)    #obliczanie promienia okregu
 
 emitter = Position()
@@ -36,4 +36,4 @@ detectors = [Position() for i in range(n)]
 #     for j in range(len(detectors)):
 #         detectors[j].updateDetector(j, r, alpha)    #aktualizacja pozycji detektorow
 #         #tu obliczenia emiter-detektor i do sinogramu
-print(bresenham(-1,-4,3,2))
+print(list(bresenham(-1,-4,3,2)))
