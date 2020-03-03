@@ -43,13 +43,9 @@ for i in range(180 // step):
 
             #mozliwe ze pojebane sa wspolrzedne x z y, w sensie np. zamienic pixel[0] z pixel[1] itp, ale to wyjdzie w praniu
 
-print(sinogram)
+maximum=max(map(lambda x: max(x), sinogram))
 
-maximum=0
-for x in sinogram:
-    if max(x)>maximum:
-        maximum=max(x)
-
+print(maximum)
 for i in range(len(sinogram)):
     sinogram[i]=sinogram[i]/maximum
 
