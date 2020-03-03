@@ -40,6 +40,17 @@ for i in range(180 // step):
         line=list(bresenham(emitter.x, emitter.y, detectors[j].x, detectors[j].y))
         for pixel in line:
             sinogram[i][j]+=img[pixel[0]][pixel[1]]
+
             #mozliwe ze pojebane sa wspolrzedne x z y, w sensie np. zamienic pixel[0] z pixel[1] itp, ale to wyjdzie w praniu
 
 print(sinogram)
+
+maximum=0
+for x in sinogram:
+    if max(x)>maximum:
+        maximum=max(x)
+
+for i in range(len(sinogram)):
+    sinogram[i]=sinogram[i]/maximum
+
+print(sinogram[1])
