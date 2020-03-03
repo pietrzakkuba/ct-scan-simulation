@@ -39,7 +39,8 @@ for i in range(180 // step):
         detectors[j].updateDetector(j, r, alpha)    #aktualizacja pozycji detektorow
         line=list(bresenham(emitter.x, emitter.y, detectors[j].x, detectors[j].y))
         for pixel in line:
-            sinogram[i][j]+=img[pixel[0]][pixel[1]]
+            if 0<=pixel[0]<width and 0<=pixel[1]<height:  #tu mozliwe znowu, ze pixel[0] z pixel[1] podmienic
+                sinogram[i][j]+=img[pixel[0]][pixel[1]]
 
             #mozliwe ze pojebane sa wspolrzedne x z y, w sensie np. zamienic pixel[0] z pixel[1] itp, ale to wyjdzie w praniu
 
@@ -50,3 +51,5 @@ for i in range(len(sinogram)):
     sinogram[i]=sinogram[i]/maximum
 
 print(sinogram[1])
+
+print(list(bresenham(-20, -3, 5, 6)))
