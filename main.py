@@ -4,51 +4,68 @@ import pydicom
 import numpy as np
 from bresenham import bresenham
 import matplotlib.image as mpimg
+from skimage.color import rgb2gray
 
 
 class Position:
-    def updateEmitter(self, alpha):
-        self.x = r * math.cos(alpha)
-        self.y = r * math.sin(alpha)
-
-    def updateDetector(self, i, r, alpha):
-        self.x = r * math.cos(alpha + math.pi - l / 2 + i * l / (n - 1))
-        self.y = r * math.sin(alpha + math.pi - l / 2 + i * l / (n - 1))
+    def __init__(self):
+        self.x = 0
+        self.y = 0
 
 
-step = 0.25  # krok
-n = 40  # liczba detektorow
-l = math.radians(30)  # rozpietosc, pewnie trzeba ogarnac zeby bylo w radianach
-alpha = 0  # kat ustawienia emitera, tez pewnie trzeba radiany
+class Chord:
+    def __init__(self, id):
+        self.emitter = Position()
+        self.detector = Position()
+        self.id = id
 
-img = mpimg.imread("test/CT_ScoutView.jpg")
+    def calcBresenham(self):
+        sum = 0
+        line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
+        for pixel in line:
+            xpixel, ypixel = pixel
+            xpixel += width // 2
+            ypixel += height // 2
+            if 0 < xpixel < width and 0 < ypixel < height:
+                sum += img[ypixel][xpixel]
+        return sum
+
+    def update(self, phase):
+        self.emitter.x = round(r * math.cos(phase + l / 2 - self.id * l / n))
+        self.emitter.y = round(r * math.sin(phase + l / 2 - self.id * l / n))
+        self.detector.x = round(r * math.cos(phase + math.pi - l / 2 + self.id * l / n))
+        self.detector.y = round(r * math.sin(phase + math.pi - l / 2 + self.id * l / n))
+
+
+step = 0.5  # krok w stopniach
+n = 201  # liczba detektorow
+l = math.pi / 2  # rozpietosc
+
+d = l / n  # przesuniecie fazowe miedzy emiterami/detektorami
+# Kwadraty2
+
+img = mpimg.imread("test/Kwadraty2.jpg")
+img = rgb2gray(img)
 plt.imshow(img, cmap='gray')
 plt.show()
 
 height, width = img.shape[:2]
 r = math.ceil(math.sqrt((height ** 2 + width ** 2)) / 2)  # obliczanie promienia okregu
 
-alpha = np.linspace(0., 180., int(180. / step), endpoint=False)
-alpha = [math.radians(alpha[i]) for i in range(len(alpha))]
+alpha = list(np.linspace(0., 180., int(180. / step), endpoint=False))
+alpha = list(map(lambda x: math.radians(x), alpha))
 
-emitter = Position()
-detectors = [Position() for i in range(n)]
+chords = [Chord(i) for i in range(n)]
 
 sinogram = [[0 for i in range(n)] for j in range(len(alpha))]
 
 for i in range(len(alpha)):
-    emitter.updateEmitter(alpha[i])
-    for j in range(len(detectors)):
-        detectors[j].updateDetector(j, r, alpha[i])  # aktualizacja pozycji detektorow
-        line = list(bresenham(int(emitter.x), int(emitter.y), int(detectors[j].x), int(detectors[j].y)))
-        for pixel in line:
-            if 0 <= pixel[0] < width and 0 <= pixel[1] < height:  # tu mozliwe znowu, ze pixel[0] z pixel[1] podmienic
-                sinogram[i][j] += img[pixel[0]][pixel[1]]
+    for j in range(len(chords)):
+        chords[j].update(alpha[i])
+        sinogram[i][j] = chords[j].calcBresenham()
 
-            # mozliwe ze pojebane sa wspolrzedne x z y, w sensie np. zamienic pixel[0] z pixel[1] itp, ale to wyjdzie w praniu
 
 maximum = max(map(lambda x: max(x), sinogram))
-
 for i in range(len(sinogram)):
     sinogram[i] = sinogram[i] / maximum
 
