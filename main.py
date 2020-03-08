@@ -5,7 +5,7 @@ import numpy as np
 from bresenham import bresenham
 import matplotlib.image as mpimg
 from skimage.color import rgb2gray
-
+import cv2
 
 class Position:
     def __init__(self):
@@ -70,4 +70,9 @@ for i in range(len(sinogram)):
     sinogram[i] = sinogram[i] / maximum
 
 plt.imshow(sinogram, cmap="gray")
+plt.show()
+
+sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
+plt.axis('off')
+plt.imshow(sinogram_resized, cmap="gray")
 plt.show()
