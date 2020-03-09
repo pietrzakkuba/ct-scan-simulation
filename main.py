@@ -37,8 +37,21 @@ class Chord:
         self.detector.y = round(r * math.sin(phase + math.pi - l / 2 + self.id * l / n))
 
 
-step = 0.5  # krok w stopniach
-n = 201  # liczba detektorow
+def normalize(image):
+    maximum = max(map(lambda x: max(x), image))
+    for i in range(len(image)):
+        image[i] = image[i] / maximum
+    return image
+
+
+def normalize2(image):
+    maximum = max(map(lambda x: max(x), image))
+    image = image / maximum
+    return image
+
+
+step = 2  # krok w stopniach
+n = 101  # liczba detektorow
 l = math.pi / 2  # rozpietosc
 
 d = l / n  # przesuniecie fazowe miedzy emiterami/detektorami
@@ -64,6 +77,7 @@ for i in range(len(alpha)):
         chords[j].update(alpha[i])
         sinogram[i][j] = chords[j].calcBresenham()
 
+sinogram=normalize2(sinogram)
 
 maximum = max(map(lambda x: max(x), sinogram))
 for i in range(len(sinogram)):
