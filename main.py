@@ -30,6 +30,15 @@ class Chord:
                 sum += img[ypixel][xpixel]
         return sum
 
+    def drawBresenham(self, rimg, sinogramval):
+        line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
+        for pixel in line:
+            xpixel, ypixel = pixel
+            xpixel += width // 2
+            ypixel += height // 2
+            if 0 < xpixel < width and 0 < ypixel < height:
+                rimg[ypixel][xpixel] += sinogramval
+
     def update(self, phase):
         self.emitter.x = round(r * math.cos(phase + l / 2 - self.id * l / n))
         self.emitter.y = round(r * math.sin(phase + l / 2 - self.id * l / n))
@@ -79,14 +88,25 @@ for i in range(len(alpha)):
 
 sinogram=normalize2(sinogram)
 
-maximum = max(map(lambda x: max(x), sinogram))
-for i in range(len(sinogram)):
-    sinogram[i] = sinogram[i] / maximum
-
-plt.imshow(sinogram, cmap="gray")
-plt.show()
+# plt.imshow(sinogram, cmap="gray")
+# plt.show()
 
 sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
 plt.axis('off')
 plt.imshow(sinogram_resized, cmap="gray")
 plt.show()
+
+rimg = img
+rimg.fill(0)
+
+rChords = [Chord(i) for i in range(n)]
+for i in range(len(alpha)):
+    for j in range(len(rChords)):
+        rChords[j].update(alpha[i])
+        rChords[j].drawBresenham(rimg, sinogram[i][j])
+
+
+rimg=normalize2(rimg)
+plt.imshow(rimg, cmap="gray")
+plt.show()
+
