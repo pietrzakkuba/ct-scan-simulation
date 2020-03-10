@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import math
-import pydicom
+import pydicom as dcm
 import numpy as np
 from bresenham import bresenham
 import matplotlib.image as mpimg
@@ -19,7 +19,7 @@ class Chord:
         self.detector = Position()
         self.id = id
 
-    def calcBresenham(self):
+    def calcBresenham(self, width, height, img):
         sum = 0
         line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
         for pixel in line:
@@ -30,7 +30,7 @@ class Chord:
                 sum += img[ypixel][xpixel]
         return sum
 
-    def drawBresenham(self, rimg, sinogramval):
+    def drawBresenham(self, rimg, sinogramval, width, height):
         line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
         for pixel in line:
             xpixel, ypixel = pixel
@@ -39,7 +39,7 @@ class Chord:
             if 0 < xpixel < width and 0 < ypixel < height:
                 rimg[ypixel][xpixel] += sinogramval
 
-    def update(self, phase):
+    def update(self, phase, r, l, n):
         self.emitter.x = round(r * math.cos(phase + l / 2 - self.id * l / n))
         self.emitter.y = round(r * math.sin(phase + l / 2 - self.id * l / n))
         self.detector.x = round(r * math.cos(phase + math.pi - l / 2 + self.id * l / n))
@@ -59,54 +59,48 @@ def normalize2(image):
     return image
 
 
-step = 2  # krok w stopniach
-n = 101  # liczba detektorow
-l = math.pi / 2  # rozpietosc
-
-d = l / n  # przesuniecie fazowe miedzy emiterami/detektorami
-# Kwadraty2
-
-img = mpimg.imread("test/Kwadraty2.jpg")
-img = rgb2gray(img)
-plt.imshow(img, cmap='gray')
-plt.show()
-
-height, width = img.shape[:2]
-r = math.ceil(math.sqrt((height ** 2 + width ** 2)) / 2)  # obliczanie promienia okregu
-
-alpha = list(np.linspace(0., 180., int(180. / step), endpoint=False))
-alpha = list(map(lambda x: math.radians(x), alpha))
-
-chords = [Chord(i) for i in range(n)]
-
-sinogram = [[0 for i in range(n)] for j in range(len(alpha))]
-
-for i in range(len(alpha)):
-    for j in range(len(chords)):
-        chords[j].update(alpha[i])
-        sinogram[i][j] = chords[j].calcBresenham()
-
-sinogram=normalize2(sinogram)
-
-# plt.imshow(sinogram, cmap="gray")
-# plt.show()
-
-sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
-plt.axis('off')
-plt.imshow(sinogram_resized, cmap="gray")
-plt.show()
-
-rimg = img
-rimg.fill(0)
-
-rChords = [Chord(i) for i in range(n)]
-for i in range(len(alpha)):
-    for j in range(len(rChords)):
-        rChords[j].update(alpha[i])
-        rChords[j].drawBresenham(rimg, sinogram[i][j])
+def read_file(path, is_dicom=False):
+    if not is_dicom:
+        img = mpimg.imread(path)
+        img = rgb2gray(img)
+    else:
+        dataset = dcm.dcmread(path)
+        img = dataset.pixel_array
+    return img
 
 
-rimg=normalize2(rimg)
-plt.imshow(rimg, cmap="gray")
-plt.show()
+def radon(img, step, n, l):
+    l = math.radians(l)
+    height, width = img.shape[:2]
+    r = math.ceil(math.sqrt((height ** 2 + width ** 2)) / 2)  # obliczanie promienia okregu
+    alpha = list(np.linspace(0., 180., int(180. / step), endpoint=False))
+    alpha = list(map(lambda x: math.radians(x), alpha))
+    chords = [Chord(i) for i in range(n)]
+    sinogram = [[0 for i in range(n)] for j in range(len(alpha))]
+    for i in range(len(alpha)):
+        for j in range(len(chords)):
+            chords[j].update(alpha[i], r, l, n)
+            sinogram[i][j] = chords[j].calcBresenham(width, height, img)
+    sinogram=normalize2(sinogram)
+
+    sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
+    plt.axis('off')
+    plt.imshow(sinogram_resized, cmap="gray")
+    plt.show()
+    return sinogram, sinogram_resized, alpha, r, l, height, width
+
+
+def iradon(img, sinogram, alpha, r, n, l, height, width):        
+    rimg = img
+    rimg.fill(0)
+
+    rChords = [Chord(i) for i in range(n)]
+    for i in range(len(alpha)):
+        for j in range(len(rChords)):
+            rChords[j].update(alpha[i], r, l, n)
+            rChords[j].drawBresenham(rimg, sinogram[i][j], width, height)
+
+    rimg=normalize2(rimg)
+    plt.imshow(rimg, cmap="gray")
+    plt.show()
 
