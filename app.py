@@ -69,8 +69,8 @@ class Root(Tk):
 
     def calculate(self):
         print('Path to file:\t\t' + self.select_entry.get())
-        print('Step:\t\t\t' + str(self.step_scale.get()))
-        print('Emitters/Detectos:\t' + str(self.emitters_detectors_scale.get()))
+        print('Step:\t\t\t' + str(self.step_scale.get() / 10))
+        print('Emitters/Detectos:\t' + str(self.emitters_detectors_scale.get() * 2 + 1))
         print('Range:\t\t\t' + str(self.range_scale.get()))
 
     def examineButton(self):
