@@ -162,7 +162,7 @@ class MainFrame(Frame):
         self.canvas_sinogram.get_tk_widget().grid(row=3, column=0, padx=10, pady=10)
 
     def generateSinogramButton(self):
-        self.calculate_sinogram_button = Button(self, text='Calculate', command=self.calculate)
+        self.calculate_sinogram_button = Button(self, text='Generate sinogram', command=self.generateSinogram)
         self.calculate_sinogram_button.grid(row=2, column=0, padx=10, pady=10)
         
     def patientInfo(self):
