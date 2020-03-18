@@ -17,14 +17,23 @@ class App(Tk):
         StartFrame(self).pack() 
 
 class LoadedImageFrame(Frame):
-    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range):
+    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range,
+                 sinogram=None, sinogram_resized=None, alpha=None, r=None, l=None, height=None, width=None, final_image=None):
         Frame.__init__(self, master)
         self.path_to_file = path_to_file
         self.step = step
         self.emitters_detectors= emitters_detectors
-        self._range = _range     
+        self.range = _range
+        self.sinogram = sinogram
+        self.sinogram_resized = sinogram_resized
+        self.alpha = alpha
+        self.r = r
+        self.l = l
+        self.height = height
+        self.width = width
+        self.final_image = final_image    
         self.image = sim.read_file(path_to_file, is_dicom)
-        self.f_image = Figure(figsize=(5, 5), dpi=100)
+        self.f_image = Figure(figsize=(6, 6), dpi=100)
         self.a_image = self.f_image.add_subplot(111)
         self.a_image.imshow(self.image, cmap='gray')
         self.canvas = FigureCanvasTkAgg(self.f_image, self)
@@ -35,7 +44,104 @@ class LoadedImageFrame(Frame):
         
     def goBack(self):
         self.destroy()
-        MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self._range).pack()
+        MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self.range,
+                  self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image
+                  ).pack()
+        
+    def goBackButton(self):
+        Button(self, text='Back', command=self.goBack).pack()
+        
+class SinogramFrame(Frame):
+    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range, 
+                 sinogram=None, sinogram_resized=None, alpha=None, r=None, l=None, height=None, width=None, final_image=None):
+        Frame.__init__(self, master)
+        self.path_to_file = path_to_file
+        self.step = step
+        self.emitters_detectors= emitters_detectors
+        self.range = _range
+        self.sinogram = sinogram
+        self.sinogram_resized = sinogram_resized
+        self.alpha = alpha
+        self.r = r
+        self.l = l
+        self.height = height
+        self.width = width
+        self.final_image = final_image
+        self.f_sinogram = Figure(figsize=(6, 6), dpi=100)
+        self.a_sinogram = self.f_sinogram.add_subplot(111)
+        if sinogram_resized is None:
+            self.image = sim.read_file(self.path_to_file, is_dicom)
+            self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width = sim.radon(self.image, self.step, self.emitters_detectors, self.range)
+            self.a_sinogram.imshow(self.sinogram_resized, cmap='gray')
+            self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
+            self.canvas_sinogram.draw()
+            self.canvas_sinogram.get_tk_widget().pack()
+        else:
+            self.sinogram_resized = sinogram_resized
+            self.a_sinogram.imshow(self.sinogram_resized, cmap='gray')
+            self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
+            self.canvas_sinogram.draw()
+            self.canvas_sinogram.get_tk_widget().pack()
+            
+        self.goBackButton()
+        
+    def goBack(self):
+        self.destroy()
+        MainFrame(
+                self.master, 
+                self.path_to_file, 
+                self.step, 
+                self.emitters_detectors, 
+                self.range, 
+                sinogram=self.sinogram, 
+                sinogram_resized=self.sinogram_resized, 
+                alpha=self.alpha, 
+                r=self.r, 
+                l=self.l, 
+                height=self.height, 
+                width=self.width,
+                final_image=self.final_image
+            ).pack()
+        
+    def goBackButton(self):
+        Button(self, text='Back', command=self.goBack).pack()
+        
+class FinalImageFrame(Frame):
+    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range, 
+                 sinogram, sinogram_resized, alpha, r, l, height, width, final_image):
+        Frame.__init__(self, master)
+        self.path_to_file = path_to_file
+        self.step = step
+        self.emitters_detectors= emitters_detectors
+        self.range = _range
+        self.sinogram = sinogram
+        self.sinogram_resized = sinogram_resized
+        self.alpha = alpha
+        self.r = r
+        self.l = l
+        self.height = height
+        self.width = width
+        self.final_image = final_image
+        self.f_final_image = Figure(figsize=(6, 6), dpi=100)
+        self.a_final_image = self.f_final_image.add_subplot(111)
+        if self.final_image is None:
+            self.image = sim.read_file(path_to_file, is_dicom)
+            self.final_image = sim.iradon(self.image, self.sinogram, self.alpha, self.r, self.emitters_detectors, self.l, self.height, self.width)
+            self.a_final_image.imshow(self.final_image, cmap='gray')
+            self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
+            self.canvas_final_image.draw()
+            self.canvas_final_image.get_tk_widget().pack()
+        else:
+            self.a_final_image.imshow(self.final_image, cmap='gray')
+            self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
+            self.canvas_final_image.draw()
+            self.canvas_final_image.get_tk_widget().pack()
+        self.goBackButton()
+        
+    def goBack(self):
+        self.destroy()
+        MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self.range,
+                  self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image).pack()
         
     def goBackButton(self):
         Button(self, text='Back', command=self.goBack).pack()
@@ -118,12 +224,36 @@ class StartFrame(Frame):
         self.examine_button.grid(row=4, column=1, padx=10, pady=20)
 
 class MainFrame(Frame):
-    def __init__(self, master, path_to_file, step, emitters_detectors, _range):
+    def __init__(
+            self,
+            master, 
+            path_to_file, 
+            step, 
+            emitters_detectors, 
+            _range, 
+            sinogram=None, 
+            sinogram_resized=None,  
+            alpha=None, 
+            r=None, 
+            l=None, 
+            height=None, 
+            width=None,
+            final_image=None
+                ):
         Frame.__init__(self, master)
         self.path_to_file = path_to_file
         self.step = step
         self.emitters_detectors = emitters_detectors
         self.range = _range
+        self.sinogram = sinogram
+        self.sinogram_resized = sinogram_resized
+        self.final_image = final_image
+        self.alpha = alpha
+        self.r = r
+        self.l = l
+        self.height = height
+        self.width = width
+        self.final_image = final_image
         if self.path_to_file.split('.')[-1] == 'dcm':
             self.is_dicom = True
         else:
@@ -132,42 +262,60 @@ class MainFrame(Frame):
         self.showLoadedImageButton()
         self.backButton()
         self.generateSinogramButton()
+        self.generateFinalImageButton()
         self.patientInfo()
 
     def showLoadedImage(self):
         self.destroy()
-        LoadedImageFrame(self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range).pack()
+        LoadedImageFrame(self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range,
+                         self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image
+                         ).pack()
 
     def showLoadedImageButton(self):
         self.loaded_image_button = Button(self, text='Show loaded image', command=self.showLoadedImage)
-        self.loaded_image_button.grid(row=0, column=0, padx=0, pady=0)       
+        self.loaded_image_button.grid(row=1, column=0, padx=10, pady=10, sticky='W')       
         
-
     def back(self):
         self.destroy()
         StartFrame(self.master, self.path_to_file).pack()
         
     def backButton(self):
         self.back_button = Button(self, text='Back', command=self.back)
-        self.back_button.grid(row=1, column=0, padx=10, pady=10)
+        self.back_button.grid(row=0, column=0, padx=10, pady=10, sticky='W')
 
     def generateSinogram(self):
-        self.image = sim.read_file(self.path_to_file, self.is_dicom)
-        self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width = sim.radon(self.image, self.step, self.emitters_detectors, self.range)
-        self.f_sinogram = Figure(figsize=(3, 3), dpi=100)
-        self.a_sinogram = self.f_sinogram.add_subplot(111)
-        self.a_sinogram.imshow(self.sinogram_resized, cmap='gray')
-        self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
-        self.canvas_sinogram.draw()
-        self.canvas_sinogram.get_tk_widget().grid(row=3, column=0, padx=10, pady=10)
+        self.destroy()
+        SinogramFrame(
+            self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range, 
+            self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image
+            ).pack()
 
     def generateSinogramButton(self):
-        self.calculate_sinogram_button = Button(self, text='Generate sinogram', command=self.generateSinogram)
-        self.calculate_sinogram_button.grid(row=2, column=0, padx=10, pady=10)
+        if self.sinogram_resized is None:
+            self.calculate_sinogram_button = Button(self, text='Generate sinogram', command=self.generateSinogram)
+        else:
+            self.calculate_sinogram_button = Button(self, text='Show sinogram', command=self.generateSinogram)
+        self.calculate_sinogram_button.grid(row=2, column=0, padx=10, pady=10, sticky='W')
+        
+    def generateFinalImage(self):
+        self.destroy()
+        FinalImageFrame(
+            self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range,
+            self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image
+                        ).pack()
+
+    def generateFinalImageButton(self):
+        if self.sinogram is None:
+            self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage, state='disabled')
+        elif self.final_image is None:
+            self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage)
+        else:
+            self.calculate_final_image_button = Button(self, text='Show final image', command=self.generateFinalImage)
+        self.calculate_final_image_button.grid(row=3, column=0, padx=10, pady=10, sticky='W')
         
     def patientInfo(self):
         self.about_label = Label(self, text='About Patient')
-        self.about_label.grid(row=0, column=3, padx=10, pady=10) 
+        self.about_label.grid(row=0, column=3, padx=10, pady=10, sticky='W') 
         
         self.name_label = Label(self, text='Name:')
         self.name_label.grid(row=1, column=2, padx=10, pady=10, sticky='E')

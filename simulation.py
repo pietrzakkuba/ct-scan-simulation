@@ -84,9 +84,6 @@ def radon(img, step, n, l):
     sinogram=normalize2(sinogram)
 
     sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
-    # plt.axis('off')
-    # plt.imshow(sinogram_resized, cmap="gray")
-    # plt.show()
     return sinogram, sinogram_resized, alpha, r, l, height, width
 
 
@@ -102,6 +99,4 @@ def iradon(img, sinogram, alpha, r, n, l, height, width):
 
     rimg=normalize2(rimg)
     return rimg
-    # plt.imshow(rimg, cmap="gray")
-    # plt.show()
 
