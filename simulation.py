@@ -100,13 +100,11 @@ def radon(img, step, n, l):
     sinogram=normalize2(sinogram)
 
     sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
-    return sinogram, sinogram_resized, alpha, r, l, height, width
+    return (sinogram, sinogram_resized, alpha, r, l, height, width)
 
 
-def iradon(img, sinogram, alpha, r, n, l, height, width):        
-    rimg = img
-    rimg.fill(0)
-
+def iradon(sinogram, alpha, r, n, l, height, width):        
+    rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
     for i in range(len(alpha)):
         for j in range(len(rChords)):

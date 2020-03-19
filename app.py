@@ -14,163 +14,104 @@ class App(Tk):
         Tk.__init__(self)
         self.title("CT Scan Simualation")
         self.wm_iconbitmap('gui/icon.ico')
+        self.path_to_file = ''
+        self.step = None
+        self.emitters_detectors = None
+        self.range = None
+        self.original_image = None
+        self.sinogram = None
+        self.sinogram_resized = None
+        self.final_image = None
+        self.alpha = None
+        self.r = None
+        self.l = None
+        self.height = None
+        self.width = None
+        self.final_image = None
+        self.name = None
+        self.sex = None
+        self.age = None
+        self.date = None
+        self.comment = None
         StartFrame(self).pack() 
 
 class LoadedImageFrame(Frame):
-    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range,
-                 sinogram=None, sinogram_resized=None, alpha=None, r=None, l=None, height=None, width=None, final_image=None,
-                 name=None, sex=None, age=None, date=None, comment=None):
+    def __init__(self, master):
         Frame.__init__(self, master)
-        self.path_to_file = path_to_file
-        self.step = step
-        self.emitters_detectors= emitters_detectors
-        self.range = _range
-        self.sinogram = sinogram
-        self.sinogram_resized = sinogram_resized
-        self.alpha = alpha
-        self.r = r
-        self.l = l
-        self.height = height
-        self.width = width
-        self.final_image = final_image
-        self.name = name
-        self.sex = sex
-        self.age = age
-        self.date = date
-        self.comment = comment   
-        self.image = sim.read_file(path_to_file, is_dicom)
         self.f_image = Figure(figsize=(6, 6), dpi=100)
         self.a_image = self.f_image.add_subplot(111)
-        self.a_image.imshow(self.image, cmap='gray')
+        self.a_image.imshow(self.master.original_image, cmap='gray')
         self.canvas = FigureCanvasTkAgg(self.f_image, self)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
         self.goBackButton()
         
-        
     def goBack(self):
         self.destroy()
-        MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self.range,
-                  self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image,
-                  self.name, self.sex, self.age, self.date, self.comment
-                  ).pack()
+        MainFrame(self.master).pack()
         
     def goBackButton(self):
         Button(self, text='Back', command=self.goBack).pack()
         
 class SinogramFrame(Frame):
-    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range, 
-                 sinogram=None, sinogram_resized=None, alpha=None, r=None, l=None, height=None, width=None, final_image=None,
-                 name=None, sex=None, age=None, date=None, comment=None):
+    def __init__(self, master):
         Frame.__init__(self, master)
-        self.path_to_file = path_to_file
-        self.step = step
-        self.emitters_detectors= emitters_detectors
-        self.range = _range
-        self.sinogram = sinogram
-        self.sinogram_resized = sinogram_resized
-        self.alpha = alpha
-        self.r = r
-        self.l = l
-        self.height = height
-        self.width = width
-        self.final_image = final_image
-        self.name = name
-        self.sex = sex
-        self.age = age
-        self.date = date
-        self.comment = comment
         self.f_sinogram = Figure(figsize=(6, 6), dpi=100)
         self.a_sinogram = self.f_sinogram.add_subplot(111)
-        if sinogram_resized is None:
-            self.image = sim.read_file(self.path_to_file, is_dicom)
-            self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width = sim.radon(self.image, self.step, self.emitters_detectors, self.range)
-            self.a_sinogram.imshow(self.sinogram_resized, cmap='gray')
-            self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
-            self.canvas_sinogram.draw()
-            self.canvas_sinogram.get_tk_widget().pack()
-        else:
-            self.sinogram_resized = sinogram_resized
-            self.a_sinogram.imshow(self.sinogram_resized, cmap='gray')
-            self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
-            self.canvas_sinogram.draw()
-            self.canvas_sinogram.get_tk_widget().pack()
-            
+        if self.master.sinogram_resized is None:
+            (
+                self.master.sinogram, 
+                self.master.sinogram_resized, 
+                self.master.alpha, 
+                self.master.r, 
+                self.master.l, 
+                self.master.height, 
+                self.master.width
+             ) = sim.radon(self.master.original_image, self.master.step, self.master.emitters_detectors, self.master.range)
+        self.a_sinogram.imshow(self.master.sinogram_resized, cmap='gray')
+        self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
+        self.canvas_sinogram.draw()
+        self.canvas_sinogram.get_tk_widget().pack()            
         self.goBackButton()
         
     def goBack(self):
         self.destroy()
-        MainFrame(
-                self.master, 
-                self.path_to_file, 
-                self.step, 
-                self.emitters_detectors, 
-                self.range, 
-                self.sinogram, 
-                self.sinogram_resized, 
-                self.alpha, 
-                self.r, 
-                self.l, 
-                self.height, 
-                self.width,
-                self.final_image,
-                self.name, self.sex, self.age, self.date, self.comment
-            ).pack()
+        MainFrame(self.master).pack()
         
     def goBackButton(self):
         Button(self, text='Back', command=self.goBack).pack()
         
 class FinalImageFrame(Frame):
-    def __init__(self, master, path_to_file, is_dicom, step, emitters_detectors, _range, 
-                 sinogram, sinogram_resized, alpha, r, l, height, width, final_image,
-                 name=None, sex=None, age=None, date=None, comment=None):
+    def __init__(self, master):
         Frame.__init__(self, master)
-        self.path_to_file = path_to_file
-        self.step = step
-        self.emitters_detectors= emitters_detectors
-        self.range = _range
-        self.sinogram = sinogram
-        self.sinogram_resized = sinogram_resized
-        self.alpha = alpha
-        self.r = r
-        self.l = l
-        self.height = height
-        self.width = width
-        self.final_image = final_image
-        self.name = name
-        self.sex = sex
-        self.age = age
-        self.date = date
-        self.comment = comment
         self.f_final_image = Figure(figsize=(6, 6), dpi=100)
         self.a_final_image = self.f_final_image.add_subplot(111)
-        if self.final_image is None:
-            self.image = sim.read_file(path_to_file, is_dicom)
-            self.final_image = sim.iradon(self.image, self.sinogram, self.alpha, self.r, self.emitters_detectors, self.l, self.height, self.width)
-            self.a_final_image.imshow(self.final_image, cmap='gray')
-            self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
-            self.canvas_final_image.draw()
-            self.canvas_final_image.get_tk_widget().pack()
-        else:
-            self.a_final_image.imshow(self.final_image, cmap='gray')
-            self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
-            self.canvas_final_image.draw()
-            self.canvas_final_image.get_tk_widget().pack()
+        if self.master.final_image is None:
+            self.master.final_image = sim.iradon(
+                self.master.sinogram,
+                self.master.alpha,
+                self.master.r,
+                self.master.emitters_detectors,
+                self.master.l,
+                self.master.height,
+                self.master.width
+                )
+        self.a_final_image.imshow(self.master.final_image, cmap='gray')
+        self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
+        self.canvas_final_image.draw()
+        self.canvas_final_image.get_tk_widget().pack()
         self.goBackButton()
         
     def goBack(self):
         self.destroy()
-        MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self.range,
-                  self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image,
-                  self.name, self.sex, self.age, self.date, self.comment).pack()
+        MainFrame(self.master).pack()
         
     def goBackButton(self):
         Button(self, text='Back', command=self.goBack).pack()
         
 class StartFrame(Frame):
-    def __init__(self, master, path_to_file=''):
+    def __init__(self, master):
         Frame.__init__(self, master)
-        self.path_to_file = path_to_file
         self.selectLabel()
         self.selectEntry()
         self.selectButton()
@@ -181,7 +122,24 @@ class StartFrame(Frame):
         self.rangeLabel()
         self.rangeScale()
         self.examineButton()
-
+        self.refresh()
+        
+    def refresh(self):
+        self.master.original_image = None
+        self.master.sinogram = None
+        self.master.sinogram_resized = None
+        self.master.final_image = None
+        self.master.alpha = None
+        self.master.r = None
+        self.master.l = None
+        self.master.height = None
+        self.master.width = None
+        self.master.final_image = None
+        self.master.name = None
+        self.master.sex = None
+        self.master.age = None
+        self.master.date = None
+        self.master.comment = None 
         
     def selectLabel(self):
         self.select_label = Label(self, text='Select file:')
@@ -189,7 +147,7 @@ class StartFrame(Frame):
 
     def selectEntry(self):
         self.select_entry = Entry(self, width=50)
-        self.select_entry.insert(INSERT, self.path_to_file)
+        self.select_entry.insert(INSERT, self.master.path_to_file)
         self.select_entry.grid(row=0, column=1, padx=10, pady=10)
 
     def selectButton(self):
@@ -197,9 +155,9 @@ class StartFrame(Frame):
         self.select_button.grid(row=0, column=2, padx=10, pady=10)
 
     def fileDialog(self):
-        self.path_to_file = filedialog.askopenfilename(initialdir='.', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
+        self.master.path_to_file = filedialog.askopenfilename(initialdir='.', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
         self.select_entry.delete(0, 'end')
-        self.select_entry.insert(INSERT, self.path_to_file)
+        self.select_entry.insert(INSERT, self.master.path_to_file)
 
     def stepLabel(self):
         self.step_label = Label(self, text='Set step [degrees]')
@@ -232,12 +190,12 @@ class StartFrame(Frame):
         self.range_scale.grid(row=3, column=1, columnspan=2, padx=10, pady=10)
 
     def calculate(self):
-        self.path_to_file = self.select_entry.get()
-        self.step = self.step_scale.get() / 10
-        self.emitters_detectors = self.emitters_detectors_scale.get()
-        self._range = self.range_scale.get()
+        self.master.path_to_file = self.select_entry.get()
+        self.master.step = self.step_scale.get() / 10
+        self.master.emitters_detectors = self.emitters_detectors_scale.get()
+        self.master.range = self.range_scale.get()
         self.destroy()
-        MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self._range).pack()
+        MainFrame(self.master).pack()
 
 
     def examineButton(self):
@@ -245,49 +203,25 @@ class StartFrame(Frame):
         self.examine_button.grid(row=4, column=1, padx=10, pady=20)
 
 class MainFrame(Frame):
-    def __init__(self, master, path_to_file, step, emitters_detectors, _range, 
-            sinogram=None, sinogram_resized=None,  alpha=None, r=None, l=None, height=None, width=None, final_image=None,
-            name=None, sex=None, age=None, date=None, comment=None
-                ):
+    def __init__(self, master):
         Frame.__init__(self, master)
-        self.path_to_file = path_to_file
-        self.step = step
-        self.emitters_detectors = emitters_detectors
-        self.range = _range
-        self.sinogram = sinogram
-        self.sinogram_resized = sinogram_resized
-        self.final_image = final_image
-        self.alpha = alpha
-        self.r = r
-        self.l = l
-        self.height = height
-        self.width = width
-        self.final_image = final_image
-        self.name = name
-        self.sex = sex
-        self.age = age
-        self.date = date
-        self.comment = comment
         self.patientInfo()
-        if self.path_to_file.split('.')[-1] == 'dcm':
-            self.is_dicom = True
-        else:
-            self.is_dicom = False
-
         self.showLoadedImageButton()
         self.backButton()
         self.generateSinogramButton()
         self.generateFinalImageButton()
         self.saveButton()
         self.setPatientInfo()
+        if self.master.path_to_file.split('.')[-1] == 'dcm':
+            self.is_dicom = True
+        else:
+            self.is_dicom = False
+        self.master.original_image = sim.read_file(self.master.path_to_file, self.is_dicom)
 
     def showLoadedImage(self):
         self.save()
         self.destroy()
-        LoadedImageFrame(self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range,
-                         self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image,
-                         self.name, self.sex, self.age, self.date, self.comment
-                         ).pack()
+        LoadedImageFrame(self.master).pack()
 
     def showLoadedImageButton(self):
         self.loaded_image_button = Button(self, text='Show loaded image', command=self.showLoadedImage)
@@ -295,7 +229,7 @@ class MainFrame(Frame):
         
     def back(self):
         self.destroy()
-        StartFrame(self.master, self.path_to_file).pack()
+        StartFrame(self.master).pack()
         
     def backButton(self):
         self.back_button = Button(self, text='Back', command=self.back)
@@ -304,14 +238,10 @@ class MainFrame(Frame):
     def generateSinogram(self):
         self.save()
         self.destroy()
-        SinogramFrame(
-            self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range, 
-            self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image,
-            self.name, self.sex, self.age, self.date, self.comment
-            ).pack()
+        SinogramFrame(self.master).pack()
 
     def generateSinogramButton(self):
-        if self.sinogram_resized is None:
+        if self.master.sinogram_resized is None:
             self.calculate_sinogram_button = Button(self, text='Generate sinogram', command=self.generateSinogram)
         else:
             self.calculate_sinogram_button = Button(self, text='Show sinogram', command=self.generateSinogram)
@@ -320,27 +250,21 @@ class MainFrame(Frame):
     def generateFinalImage(self):
         self.save()
         self.destroy()
-        FinalImageFrame(
-            self.master, self.path_to_file, self.is_dicom, self.step, self.emitters_detectors, self.range,
-            self.sinogram, self.sinogram_resized, self.alpha, self.r, self.l, self.height, self.width, self.final_image,
-            self.name, self.sex, self.age, self.date, self.comment
-                        ).pack()
+        FinalImageFrame(self.master).pack()
 
     def generateFinalImageButton(self):
-        if self.sinogram is None:
+        if self.master.sinogram is None:
             self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage, state='disabled')
-        elif self.final_image is None:
+        elif self.master.final_image is None:
             self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage)
         else:
             self.calculate_final_image_button = Button(self, text='Show final image', command=self.generateFinalImage)
         self.calculate_final_image_button.grid(row=3, column=0, padx=10, pady=10, sticky='W')
-        
-        
+          
     def today(self):
         self.date_entry.delete(1.0, END)
         self.date_entry.insert(END, str(date.today()))
         
-    
     def patientInfo(self):
         self.about_label = Label(self, text='About Patient')
         self.about_label.grid(row=0, column=3, padx=10, pady=10, sticky='W') 
@@ -371,7 +295,7 @@ class MainFrame(Frame):
         
     def setPatientInfo(self):
         self.patientInfo = []
-        for item in [self.name, self.sex, self.age, self.date, self.comment]:
+        for item in [self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment]:
             if item is None:
                 self.patientInfo.append('')
             else:
@@ -388,22 +312,20 @@ class MainFrame(Frame):
         self.comment_entry.insert(END, self.patientInfo[4])
 
     def save(self):
-        self.name = self.name_entry.get(1.0, END)[:-1]
-        self.sex = self.sex_entry.get(1.0, END)[:-1]
-        self.age = self.age_entry.get(1.0, END)[:-1]
-        self.date = self.date_entry.get(1.0, END)[:-1]
-        self.comment = self.comment_entry.get(1.0, END)[:-1]
+        self.master.name = self.name_entry.get(1.0, END)[:-1]
+        self.master.sex = self.sex_entry.get(1.0, END)[:-1]
+        self.master.age = self.age_entry.get(1.0, END)[:-1]
+        self.master.date = self.date_entry.get(1.0, END)[:-1]
+        self.master.comment = self.comment_entry.get(1.0, END)[:-1]
         
     def saveDicom(self):
-        self.save()
-        self.file_to_save = filedialog.asksaveasfile(mode='w', defaultextension='.dcm').name
-        sim.write_dicom_file(self.file_to_save, self.final_image, self.name, self.sex, self.age, self.date, self.comment)
+        self.save()    
+        self.file_to_save = filedialog.asksaveasfile(mode='w', defaultextension='.dcm')
+        if self.file_to_save is not None:
+            sim.write_dicom_file(self.file_to_save.name, self.master.final_image, self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment)
 
-        
-        
-        
     def saveButton(self):
-        if self.final_image is None:
+        if self.master.final_image is None:
             save_button = Button(self, text='Save as DICOM', command=self.saveDicom, state='disabled')
         else:
             save_button = Button(self, text='Save as DICOM', command=self.saveDicom)
