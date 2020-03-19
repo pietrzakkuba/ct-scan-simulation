@@ -8,7 +8,6 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk 
 from PIL import ImageTk, Image
 
-
 class App(Tk):
     def __init__(self):
         Tk.__init__(self)
@@ -388,15 +387,16 @@ class MainFrame(Frame):
         
     def saveDicom(self):
         self.save()
-        # TODO
-        # zapisywanie jako dicom tu
-          
-            
+        self.file_to_save = filedialog.asksaveasfile(mode='w', defaultextension='.dcm').name
+        sim.write_dicom_file(self.file_to_save, self.final_image, self.name, self.sex, self.age, self.date, self.comment)
+        
+        
+        
     def saveButton(self):
         if self.final_image is None:
             save_button = Button(self, text='Save as DICOM', command=self.saveDicom, state='disabled')
         else:
-            save_button = Button(self, text='Save as DICOM', command=self.save)
+            save_button = Button(self, text='Save as DICOM', command=self.saveDicom)
         save_button.grid(row=6, column=3, padx=10, pady=10, sticky='W')
       
 

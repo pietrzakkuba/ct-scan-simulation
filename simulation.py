@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import math
 import pydicom as dcm
+from pydicom.dataset import Dataset, FileDataset
 import numpy as np
 from bresenham import bresenham
 import matplotlib.image as mpimg
@@ -65,6 +66,7 @@ def read_file(path, is_dicom=False):
         img = rgb2gray(img)
     else:
         dataset = dcm.dcmread(path)
+        dataset.file_meta.TransferSyntaxUID = dcm.uid.ImplicitVRLittleEndian
         img = dataset.pixel_array
     return img
 
@@ -100,3 +102,30 @@ def iradon(img, sinogram, alpha, r, n, l, height, width):
     rimg=normalize2(rimg)
     return rimg
 
+
+def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
+        file_meta = Dataset()
+        file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'
+        file_meta.MediaStorageSOPInstanceUID = "1.2.3"
+        file_meta.ImplementationClassUID = "1.2.3.4"
+        
+        ds = FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128)
+        
+        ds.PixelData = image
+        ds.PatientName = name
+        ds.PatientSex = sex
+        ds.PatientAge = age
+        ds.StudyDate = date
+        # TODO 
+        ds.BitsAllocated = None
+        ds.Rows = None
+        ds.Columms = None
+        ds.PixelRepresentation = None
+        ds.SamplesPerPixel = None
+        ds.PhotometricInterpretation = None
+        # TODO
+        ds.is_little_endian = True
+        ds.is_implicit_VR = True
+        print(ds)
+        
+        ds.save_as(filename)
