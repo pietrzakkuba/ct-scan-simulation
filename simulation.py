@@ -25,8 +25,8 @@ class Chord:
         line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
         for pixel in line:
             xpixel, ypixel = pixel
-            xpixel += width // 2
-            ypixel += height // 2
+            xpixel += round(width / 2)
+            ypixel += round(height / 2)
             if 0 < xpixel < width and 0 < ypixel < height:
                 sum += img[ypixel][xpixel]
         return sum
@@ -35,8 +35,8 @@ class Chord:
         line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
         for pixel in line:
             xpixel, ypixel = pixel
-            xpixel += width // 2
-            ypixel += height // 2
+            xpixel += round(width / 2)
+            ypixel += round(height / 2)
             if 0 < xpixel < width and 0 < ypixel < height:
                 rimg[ypixel][xpixel] += sinogramval
 
@@ -47,11 +47,12 @@ class Chord:
         self.detector.y = round(r * math.sin(phase + math.pi - l / 2 + self.id * l / n))
 
 
-def normalize(image):
+def normalize(image): #do wywalenia - 2 lepsze
     maximum = max(map(lambda x: max(x), image))
     for i in range(len(image)):
         image[i] = image[i] / maximum
     return image
+
 
 
 def normalize2(image):
@@ -59,6 +60,19 @@ def normalize2(image):
     image = image / maximum
     return image
 
+def createFilter(n):
+    filtertab = []
+    tab = [i for i in range(-n, n+1)]
+    for i in tab:
+        if i % 2:
+            filtertab.append((-4 / (math.pi ** 2)) / (i ** 2))
+        else:
+            filtertab.append(0)
+    filtertab[n]=1
+    return filtertab
+
+def applyFilter():
+    print("xD")
 
 def read_file(path, is_dicom=False):
     if not is_dicom:

@@ -197,7 +197,7 @@ class StartFrame(Frame):
         self.select_button.grid(row=0, column=2, padx=10, pady=10)
 
     def fileDialog(self):
-        self.path_to_file = filedialog.askopenfilename(initialdir='/', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
+        self.path_to_file = filedialog.askopenfilename(initialdir='.', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
         self.select_entry.delete(0, 'end')
         self.select_entry.insert(INSERT, self.path_to_file)
 
@@ -216,8 +216,8 @@ class StartFrame(Frame):
         self.emitters_detectors_label.grid(row=2, column=0, sticky='E', padx=10, pady=10)
 
     def emittersDetectorsScale(self):
-        self.emitters_detectors_interval = lambda value : self.emitters_detectors_scale.config(label=(int(value) * 2 + 1))
-        self.emitters_detectors_scale = Scale(self, from_=1, to=150, length=400, orient=HORIZONTAL, showvalue=False, command=self.emitters_detectors_interval)
+        self.emitters_detectors_interval = lambda value : self.emitters_detectors_scale.config(label=(int(value)))
+        self.emitters_detectors_scale = Scale(self, from_=1, to=300, length=400, orient=HORIZONTAL, showvalue=False, command=self.emitters_detectors_interval)
         self.emitters_detectors_scale.set(25)
         self.emitters_detectors_scale.grid(row=2, column=1, columnspan=2, padx=10, pady=10) 
 
