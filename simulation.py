@@ -24,8 +24,8 @@ class Chord:
         line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
         for pixel in line:
             xpixel, ypixel = pixel
-            xpixel += width // 2
-            ypixel += height // 2
+            xpixel += round(width / 2)
+            ypixel += round(height / 2)
             if 0 < xpixel < width and 0 < ypixel < height:
                 sum += img[ypixel][xpixel]
         return sum
@@ -34,8 +34,8 @@ class Chord:
         line = list(bresenham(self.emitter.x, self.emitter.y, self.detector.x, self.detector.y))
         for pixel in line:
             xpixel, ypixel = pixel
-            xpixel += width // 2
-            ypixel += height // 2
+            xpixel += round(width / 2)
+            ypixel += round(height / 2)
             if 0 < xpixel < width and 0 < ypixel < height:
                 rimg[ypixel][xpixel] += sinogramval
 
