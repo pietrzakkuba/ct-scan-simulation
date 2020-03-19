@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk 
 from PIL import ImageTk, Image
+from datetime import date
 
 class App(Tk):
     def __init__(self):
@@ -334,6 +335,12 @@ class MainFrame(Frame):
             self.calculate_final_image_button = Button(self, text='Show final image', command=self.generateFinalImage)
         self.calculate_final_image_button.grid(row=3, column=0, padx=10, pady=10, sticky='W')
         
+        
+    def today(self):
+        self.date_entry.delete(1.0, END)
+        self.date_entry.insert(END, str(date.today()))
+        
+    
     def patientInfo(self):
         self.about_label = Label(self, text='About Patient')
         self.about_label.grid(row=0, column=3, padx=10, pady=10, sticky='W') 
@@ -349,15 +356,17 @@ class MainFrame(Frame):
         self.comment_label = Label(self, text='Comment:')
         self.comment_label.grid(row=5, column=2, padx=10, pady=10, sticky='E')
         
-        self.name_entry = Text(self, width=50, height=1)
+        self.name_entry = Text(self, width=40, height=1)
         self.name_entry.grid(row=1, column=3, padx=10, pady=10, sticky='W')
-        self.sex_entry = Text(self, width=50, height=1)
+        self.sex_entry = Text(self, width=40, height=1)
         self.sex_entry.grid(row=2, column=3, padx=10, pady=10, sticky='W')
         self.age_entry = Text(self, width=10, height=1)
         self.age_entry.grid(row=3, column=3, padx=10, pady=10, sticky='W')
-        self.date_entry = Text(self, width=50, height=1)
+        self.date_entry = Text(self, width=30, height=1)
         self.date_entry.grid(row=4, column=3, padx=10, pady=10, sticky='W')
-        self.comment_entry = Text(self, width=50, height=10)
+        self.date_button = Button(self, text='Today', command=self.today)
+        self.date_button.grid(row=4, column=3, padx=10, pady=10, sticky='E')
+        self.comment_entry = Text(self, width=40, height=10)
         self.comment_entry.grid(row=5, column=3, padx=10, pady=10, sticky='W')
         
     def setPatientInfo(self):
@@ -389,6 +398,7 @@ class MainFrame(Frame):
         self.save()
         self.file_to_save = filedialog.asksaveasfile(mode='w', defaultextension='.dcm').name
         sim.write_dicom_file(self.file_to_save, self.final_image, self.name, self.sex, self.age, self.date, self.comment)
+
         
         
         

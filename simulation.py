@@ -104,28 +104,27 @@ def iradon(img, sinogram, alpha, r, n, l, height, width):
 
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
-        file_meta = Dataset()
-        file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'
-        file_meta.MediaStorageSOPInstanceUID = "1.2.3"
-        file_meta.ImplementationClassUID = "1.2.3.4"
-        
-        ds = FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128)
-        
-        ds.PixelData = image
-        ds.PatientName = name
-        ds.PatientSex = sex
-        ds.PatientAge = age
-        ds.StudyDate = date
-        # TODO 
-        ds.BitsAllocated = None
-        ds.Rows = None
-        ds.Columms = None
-        ds.PixelRepresentation = None
-        ds.SamplesPerPixel = None
-        ds.PhotometricInterpretation = None
-        # TODO
-        ds.is_little_endian = True
-        ds.is_implicit_VR = True
-        print(ds)
-        
-        ds.save_as(filename)
+    file_meta = Dataset()
+    file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'
+    file_meta.MediaStorageSOPInstanceUID = "1.2.3"
+    file_meta.ImplementationClassUID = "1.2.3.4"
+    image = (image * 256).astype('uint8')
+    ds = FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128)
+    ds.PixelData = image
+    ds.PatientName = name
+    ds.PatientSex = sex
+    ds.PatientAge = age
+    ds.StudyDate = date
+    ds.ImageComments = comment
+    ds.BitsAllocated = 8
+    ds.BitsStored = 8
+    ds.HighBit = 7
+    ds.Rows = image.shape[0]
+    ds.Columns = image.shape[1]
+    ds.PixelRepresentation = 0
+    ds.SamplesPerPixel = 1
+    ds.PhotometricInterpretation = 'MONOCHROME2'
+    ds.is_little_endian = True
+    ds.is_implicit_VR = True
+    
+    ds.save_as(filename)
