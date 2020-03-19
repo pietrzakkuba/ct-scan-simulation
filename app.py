@@ -234,7 +234,7 @@ class StartFrame(Frame):
     def calculate(self):
         self.path_to_file = self.select_entry.get()
         self.step = self.step_scale.get() / 10
-        self.emitters_detectors = self.emitters_detectors_scale.get() * 2 + 1
+        self.emitters_detectors = self.emitters_detectors_scale.get()
         self._range = self.range_scale.get()
         self.destroy()
         MainFrame(self.master, self.path_to_file, self.step, self.emitters_detectors, self._range).pack()
