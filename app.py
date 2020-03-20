@@ -110,7 +110,7 @@ class FinalImageFrame(Frame):
         Button(self, text='Back', command=self.goBack).pack()
         
 class StartFrame(Frame):
-    def __init__(self, master):
+    def __init__(self, master, from_main=False):
         Frame.__init__(self, master)
         self.selectLabel()
         self.selectEntry()
@@ -122,7 +122,8 @@ class StartFrame(Frame):
         self.rangeLabel()
         self.rangeScale()
         self.examineButton()
-        self.refresh()
+        if from_main:
+            self.refresh()
         
     def refresh(self):
         self.master.original_image = None
@@ -195,7 +196,7 @@ class StartFrame(Frame):
         self.master.emitters_detectors = self.emitters_detectors_scale.get()
         self.master.range = self.range_scale.get()
         self.destroy()
-        MainFrame(self.master).pack()
+        MainFrame(self.master, True).pack()
 
 
     def examineButton(self):
@@ -203,7 +204,7 @@ class StartFrame(Frame):
         self.examine_button.grid(row=4, column=1, padx=10, pady=20)
 
 class MainFrame(Frame):
-    def __init__(self, master):
+    def __init__(self, master, from_start=False):
         Frame.__init__(self, master)
         self.patientInfo()
         self.showLoadedImageButton()
@@ -211,12 +212,16 @@ class MainFrame(Frame):
         self.generateSinogramButton()
         self.generateFinalImageButton()
         self.saveButton()
+        if from_start:
+            (
+                self.master.original_image,
+                self.master.name,
+                self.master.sex,
+                self.master.age,
+                self.master.date,
+                self.master.comment
+            ) = sim.read_file(self.master.path_to_file)
         self.setPatientInfo()
-        if self.master.path_to_file.split('.')[-1] == 'dcm':
-            self.is_dicom = True
-        else:
-            self.is_dicom = False
-        self.master.original_image = sim.read_file(self.master.path_to_file, self.is_dicom)
 
     def showLoadedImage(self):
         self.save()
@@ -229,7 +234,7 @@ class MainFrame(Frame):
         
     def back(self):
         self.destroy()
-        StartFrame(self.master).pack()
+        StartFrame(self.master, True).pack()
         
     def backButton(self):
         self.back_button = Button(self, text='Back', command=self.back)

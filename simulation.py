@@ -74,15 +74,25 @@ def createFilter(n):
 def applyFilter():
     print("xD")
 
-def read_file(path, is_dicom=False):
-    if not is_dicom:
-        img = mpimg.imread(path)
-        img = rgb2gray(img)
-    else:
+def read_file(path):
+    if path.split('.')[-1] == 'dcm':
         dataset = dcm.dcmread(path)
         dataset.file_meta.TransferSyntaxUID = dcm.uid.ImplicitVRLittleEndian
         img = dataset.pixel_array
-    return img
+        name = dataset.PatientName
+        sex = dataset.PatientSex
+        age = dataset.PatientAge
+        date = dataset.StudyDate
+        comment = dataset.ImageComments
+    else:
+        img = mpimg.imread(path)
+        img = rgb2gray(img)
+        name = None
+        sex = None
+        age = None
+        date = None
+        comment = None
+    return (img, name, sex, age, date, comment)
 
 
 def radon(img, step, n, l):
