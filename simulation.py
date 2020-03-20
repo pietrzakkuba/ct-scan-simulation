@@ -56,9 +56,7 @@ def normalize(image): #do wywalenia - 2 lepsze
 
 
 def normalize2(image):
-    maximum = max(map(lambda x: max(x), image))
-    image = image / maximum
-    return image
+    return image / max(map(lambda x: max(x), image))
 
 def createFilter(n):
     filtertab = []
@@ -103,14 +101,15 @@ def radon(img, step, n, l):
     alpha = list(map(lambda x: math.radians(x), alpha))
     chords = [Chord(i) for i in range(n)]
     sinogram = [[0 for i in range(n)] for j in range(len(alpha))]
+    sinogram_resized_list = list()
     for i in range(len(alpha)):
         for j in range(len(chords)):
             chords[j].update(alpha[i], r, l, n)
             sinogram[i][j] = chords[j].calcBresenham(width, height, img)
-    sinogram=normalize2(sinogram)
-
-    sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
-    return (sinogram, sinogram_resized, alpha, r, l, height, width)
+        sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
+        sinogram_resized_list.append(sinogram_resized)
+    siongram = normalize2(sinogram)
+    return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
 
 def iradon(sinogram, alpha, r, n, l, height, width):        

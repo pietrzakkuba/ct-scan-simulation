@@ -20,7 +20,7 @@ class App(Tk):
         self.range = None
         self.original_image = None
         self.sinogram = None
-        self.sinogram_resized = None
+        self.sinogram_resized = list()
         self.final_image = None
         self.alpha = None
         self.r = None
@@ -58,7 +58,7 @@ class SinogramFrame(Frame):
         Frame.__init__(self, master)
         self.f_sinogram = Figure(figsize=(6, 6), dpi=100)
         self.a_sinogram = self.f_sinogram.add_subplot(111)
-        if self.master.sinogram_resized is None:
+        if self.master.sinogram_resized == list():
             (
                 self.master.sinogram, 
                 self.master.sinogram_resized, 
@@ -68,18 +68,33 @@ class SinogramFrame(Frame):
                 self.master.height, 
                 self.master.width
              ) = sim.radon(self.master.original_image, self.master.step, self.master.emitters_detectors, self.master.range)
-        self.a_sinogram.imshow(self.master.sinogram_resized, cmap='gray')
+        self.scale()
+        self.showImage()
+        self.goBackButton()
+        self.setImageButton()
+        
+    def showImage(self):
+        self.step = int(self.scale.get() * (len(self.master.sinogram_resized) / 100)) - 1
+        self.a_sinogram.imshow(self.master.sinogram_resized[self.step], cmap='gray')
         self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
         self.canvas_sinogram.draw()
-        self.canvas_sinogram.get_tk_widget().pack()            
-        self.goBackButton()
+        self.canvas_sinogram.get_tk_widget().grid(row=0, column=1)              
         
+    
+    def scale(self):
+        self.scale = Scale(self, from_=1, to=100, length=600, orient=VERTICAL, showvalue=True)
+        self.scale.set(100)
+        self.scale.grid(row=0, column=0)
+    
     def goBack(self):
         self.destroy()
-        MainFrame(self.master).pack()
+        MainFrame(self.master).grid(row=1, column=0, columnspan=2)
         
     def goBackButton(self):
-        Button(self, text='Back', command=self.goBack).pack()
+        Button(self, text='Back', command=self.goBack).grid(row=1, column=1)
+        
+    def setImageButton(self):
+        Button(self, text='Set progress', command=self.showImage).grid(row=1, column=0)
         
 class FinalImageFrame(Frame):
     def __init__(self, master):
@@ -128,7 +143,7 @@ class StartFrame(Frame):
     def refresh(self):
         self.master.original_image = None
         self.master.sinogram = None
-        self.master.sinogram_resized = None
+        self.master.sinogram_resized = list()
         self.master.final_image = None
         self.master.alpha = None
         self.master.r = None
@@ -246,7 +261,7 @@ class MainFrame(Frame):
         SinogramFrame(self.master).pack()
 
     def generateSinogramButton(self):
-        if self.master.sinogram_resized is None:
+        if self.master.sinogram_resized == list():
             self.calculate_sinogram_button = Button(self, text='Generate sinogram', command=self.generateSinogram)
         else:
             self.calculate_sinogram_button = Button(self, text='Show sinogram', command=self.generateSinogram)
