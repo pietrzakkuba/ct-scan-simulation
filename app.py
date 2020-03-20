@@ -88,7 +88,7 @@ class SinogramFrame(Frame):
     
     def goBack(self):
         self.destroy()
-        MainFrame(self.master).grid(row=1, column=0, columnspan=2)
+        MainFrame(self.master).pack()
         
     def goBackButton(self):
         Button(self, text='Back', command=self.goBack).grid(row=1, column=1)
