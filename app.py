@@ -58,6 +58,8 @@ class SinogramFrame(Frame):
         Frame.__init__(self, master)
         self.f_sinogram = Figure(figsize=(6, 6), dpi=100)
         self.a_sinogram = self.f_sinogram.add_subplot(111)
+        self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
+        self.image_widget = self.canvas_sinogram.get_tk_widget()
         if self.master.sinogram_resized == list():
             (
                 self.master.sinogram, 
@@ -74,11 +76,11 @@ class SinogramFrame(Frame):
         self.setImageButton()
         
     def showImage(self):
+        self.image_widget.grid_forget()
         self.step = int(self.scale.get() * (len(self.master.sinogram_resized) / 100)) - 1
         self.a_sinogram.imshow(self.master.sinogram_resized[self.step], cmap='gray')
-        self.canvas_sinogram = FigureCanvasTkAgg(self.f_sinogram, self)
         self.canvas_sinogram.draw()
-        self.canvas_sinogram.get_tk_widget().grid(row=0, column=1)              
+        self.image_widget.grid(row=0, column=1)              
         
     
     def scale(self):
