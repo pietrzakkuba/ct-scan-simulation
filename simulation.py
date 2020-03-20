@@ -39,6 +39,7 @@ class Chord:
             ypixel += round(height / 2)
             if 0 < xpixel < width and 0 < ypixel < height:
                 rimg[ypixel][xpixel] += sinogramval
+        return rimg
 
     def update(self, phase, r, l, n):
         self.emitter.x = round(r * math.cos(phase + l / 2 - self.id * l / n))
@@ -115,13 +116,13 @@ def radon(img, step, n, l):
 def iradon(sinogram, alpha, r, n, l, height, width):        
     rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
+    rimg_list = list()
     for i in range(len(alpha)):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
-            rChords[j].drawBresenham(rimg, sinogram[i][j], width, height)
-
-    rimg=normalize2(rimg)
-    return rimg
+            rimg = rChords[j].drawBresenham(rimg, sinogram[i][j], width, height)
+        rimg_list.append(rimg.copy())
+    return rimg_list
 
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
@@ -129,7 +130,7 @@ def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, 
     file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'
     file_meta.MediaStorageSOPInstanceUID = "1.2.3"
     file_meta.ImplementationClassUID = "1.2.3.4"
-    image = (image * 256).astype('uint8')
+    image = (normalize2(image) * 256).astype('uint8')
     ds = FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128)
     ds.PixelData = image
     ds.PatientName = name

@@ -21,13 +21,12 @@ class App(Tk):
         self.original_image = None
         self.sinogram = None
         self.sinogram_resized = list()
-        self.final_image = None
+        self.final_image = list()
         self.alpha = None
         self.r = None
         self.l = None
         self.height = None
         self.width = None
-        self.final_image = None
         self.name = None
         self.sex = None
         self.age = None
@@ -103,7 +102,9 @@ class FinalImageFrame(Frame):
         Frame.__init__(self, master)
         self.f_final_image = Figure(figsize=(6, 6), dpi=100)
         self.a_final_image = self.f_final_image.add_subplot(111)
-        if self.master.final_image is None:
+        self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
+        self.image_widget = self.canvas_final_image.get_tk_widget()
+        if not len(self.master.final_image):
             self.master.final_image = sim.iradon(
                 self.master.sinogram,
                 self.master.alpha,
@@ -113,18 +114,35 @@ class FinalImageFrame(Frame):
                 self.master.height,
                 self.master.width
                 )
-        self.a_final_image.imshow(self.master.final_image, cmap='gray')
-        self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
-        self.canvas_final_image.draw()
-        self.canvas_final_image.get_tk_widget().pack()
+            
+        self.scale()
+        self.showImage()
         self.goBackButton()
+        self.setImageButton()
+        
+        
+    def scale(self):
+        self.scale = Scale(self, from_=1, to=100, length=600, orient=VERTICAL, showvalue=True)
+        self.scale.set(100)
+        self.scale.grid(row=0, column=0)
+
+
+    def showImage(self):
+        self.image_widget.grid_forget()
+        self.step = int(self.scale.get() * (len(self.master.final_image) / 100)) - 1
+        self.a_final_image.imshow(self.master.final_image[self.step], cmap='gray')
+        self.canvas_final_image.draw()
+        self.image_widget.grid(row=0, column=1)  
         
     def goBack(self):
         self.destroy()
         MainFrame(self.master).pack()
         
     def goBackButton(self):
-        Button(self, text='Back', command=self.goBack).pack()
+        Button(self, text='Back', command=self.goBack).grid(row=1, column=1)
+        
+    def setImageButton(self):
+        Button(self, text='Set progress', command=self.showImage).grid(row=1, column=0)
         
 class StartFrame(Frame):
     def __init__(self, master, from_main=False):
@@ -146,13 +164,12 @@ class StartFrame(Frame):
         self.master.original_image = None
         self.master.sinogram = None
         self.master.sinogram_resized = list()
-        self.master.final_image = None
+        self.master.final_image = list()
         self.master.alpha = None
         self.master.r = None
         self.master.l = None
         self.master.height = None
         self.master.width = None
-        self.master.final_image = None
         self.master.name = None
         self.master.sex = None
         self.master.age = None
@@ -275,9 +292,9 @@ class MainFrame(Frame):
         FinalImageFrame(self.master).pack()
 
     def generateFinalImageButton(self):
-        if self.master.sinogram is None:
+        if self.master.sinogram == list():
             self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage, state='disabled')
-        elif self.master.final_image is None:
+        elif self.master.final_image == list():
             self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage)
         else:
             self.calculate_final_image_button = Button(self, text='Show final image', command=self.generateFinalImage)
@@ -344,10 +361,10 @@ class MainFrame(Frame):
         self.save()    
         self.file_to_save = filedialog.asksaveasfile(mode='w', defaultextension='.dcm')
         if self.file_to_save is not None:
-            sim.write_dicom_file(self.file_to_save.name, self.master.final_image, self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment)
+            sim.write_dicom_file(self.file_to_save.name, self.master.final_image[-1], self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment)
 
     def saveButton(self):
-        if self.master.final_image is None:
+        if not len(self.master.final_image):
             save_button = Button(self, text='Save as DICOM', command=self.saveDicom, state='disabled')
         else:
             save_button = Button(self, text='Save as DICOM', command=self.saveDicom)
