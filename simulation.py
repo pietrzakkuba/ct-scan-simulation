@@ -70,8 +70,12 @@ def createFilter(n):
     filtertab[n]=1
     return filtertab
 
-def applyFilter():
-    print("xD")
+def applyFilter(sinogram, n):
+    new_sinogram = []
+    filterb = createFilter(n)
+    for x in sinogram:
+        new_sinogram.append(np.convolve(x, filterb, 'same'))
+    return new_sinogram
 
 def read_file(path):
     if path.split('.')[-1] == 'dcm':
@@ -109,7 +113,7 @@ def radon(img, step, n, l):
             sinogram[i][j] = chords[j].calcBresenham(width, height, img)
         sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
         sinogram_resized_list.append(sinogram_resized)
-    siongram = normalize2(sinogram)
+    sinogram = normalize2(sinogram)
     return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
 
@@ -117,6 +121,7 @@ def iradon(sinogram, alpha, r, n, l, height, width):
     rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
     rimg_list = list()
+    sinogram = applyFilter(sinogram, 20)
     for i in range(len(alpha)):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
