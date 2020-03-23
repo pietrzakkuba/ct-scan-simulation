@@ -293,7 +293,7 @@ class MainFrame(Frame):
         FinalImageFrame(self.master).pack()
 
     def generateFinalImageButton(self):
-        if self.master.sinogram == list():
+        if self.master.sinogram is None:
             self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage, state='disabled')
         elif self.master.final_image == list():
             self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage)
