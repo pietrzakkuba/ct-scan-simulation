@@ -116,7 +116,6 @@ def radon(img, step, n, l):
 
 
 def iradon(sinogram, alpha, r, n, l, height, width, filter):
-    l = math.radians(l)
     rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
     rimg_list = list()
@@ -162,27 +161,27 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
     sinogram, sinogram_resized_list, alpha, r, l, height, width = radon(img, 180 / skany, emdet,
                                                                         rozpietosc)
     cv2.imwrite(
-        "./results/" + str(indeks) + "1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + ".jpg",
-        cv2.convertScaleAbs(sinogram, alpha=(255.0)))
+        "./testing/" + str(indeks) + "1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + ".jpg", sinogram)
+        # cv2.convertScaleAbs(sinogram, alpha=(255.0)))
 
-    cv2.imwrite("./results/" + str(indeks) + "2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
+    cv2.imwrite("./testing/" + str(indeks) + "2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
         skany) + "_rozpietosc=" + str(
-        rozpietosc) + ".jpg", cv2.convertScaleAbs(sinogram_resized_list[-1], alpha=(255.0)))
+        rozpietosc) + ".jpg", sinogram_resized_list[-1]) #cv2.convertScaleAbs(sinogram_resized_list[-1], alpha=(255.0)))
 
-    rimg_list = iradon(sinogram, alpha, r, emdet, rozpietosc, height, width, False)
+    rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, False)
     cv2.imwrite(
-        "./results/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=False.jpg",
-        cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
-    rimg_list = iradon(sinogram, alpha, r, emdet, rozpietosc, height, width, True)
+        "./testing/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + "filtr=False.jpg", rimg_list[-1])
+        # cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
+    rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, True)
     cv2.imwrite(
-        "./results/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=True.jpg",
-        cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
+        "./testing/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + "filtr=True.jpg", rimg_list[-1])
+        # cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
     indeks += 1
 
-# indeks = 20           #ustawic na 1 jesli poczatek testow
+# indeks = 1           #ustawic na 1 jesli poczatek testow
 # img, name, sex, age, date, comment = read_file("./test/Shepp_logan.jpg")
 #
 # t = time.localtime()
@@ -190,7 +189,7 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
 # print(current_time)
 #
 # testing(img)
-#
+
 # for i in range(90, 721, 90):
 #     testing(img, emdet=i)
 #     print("emdet =", i)
