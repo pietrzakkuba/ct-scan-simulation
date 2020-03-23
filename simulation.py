@@ -160,28 +160,27 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
     global indeks
     sinogram, sinogram_resized_list, alpha, r, l, height, width = radon(img, 180 / skany, emdet,
                                                                         rozpietosc)
-    cv2.imwrite(
-        "./testing/" + str(indeks) + "1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + ".jpg", sinogram)
-        # cv2.convertScaleAbs(sinogram, alpha=(255.0)))
+    plt.imsave(
+        "./results/" + str(indeks) + "1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + ".jpg", sinogram, cmap="gray")
 
-    cv2.imwrite("./testing/" + str(indeks) + "2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
+    plt.imsave("./results/" + str(indeks) + "2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
         skany) + "_rozpietosc=" + str(
-        rozpietosc) + ".jpg", sinogram_resized_list[-1]) #cv2.convertScaleAbs(sinogram_resized_list[-1], alpha=(255.0)))
+        rozpietosc) + ".jpg", sinogram_resized_list[-1], cmap="gray")
 
     rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, False)
-    cv2.imwrite(
-        "./testing/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=False.jpg", rimg_list[-1])
-        # cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
+    plt.imsave(
+        "./results/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + "filtr=False.jpg", rimg_list[-1], cmap="gray")
+
     rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, True)
-    cv2.imwrite(
-        "./testing/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=True.jpg", rimg_list[-1])
-        # cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
+    plt.imsave(
+        "./results/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + "filtr=True.jpg", rimg_list[-1], cmap="gray")
     indeks += 1
 
-# indeks = 1           #ustawic na 1 jesli poczatek testow
+
+# indeks = 1  # ustawic na 1 jesli poczatek testow
 # img, name, sex, age, date, comment = read_file("./test/Shepp_logan.jpg")
 #
 # t = time.localtime()
