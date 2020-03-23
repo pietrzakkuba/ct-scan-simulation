@@ -112,7 +112,8 @@ class FinalImageFrame(Frame):
                 self.master.emitters_detectors,
                 self.master.l,
                 self.master.height,
-                self.master.width
+                self.master.width,
+                True
                 )
             
         self.scale()
@@ -190,7 +191,7 @@ class StartFrame(Frame):
         self.select_button.grid(row=0, column=2, padx=10, pady=10)
 
     def fileDialog(self):
-        self.master.path_to_file = filedialog.askopenfilename(initialdir='.', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
+        self.master.path_to_file = filedialog.askopenfilename(initialdir='./test', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
         self.select_entry.delete(0, 'end')
         self.select_entry.insert(INSERT, self.master.path_to_file)
 
@@ -210,7 +211,7 @@ class StartFrame(Frame):
 
     def emittersDetectorsScale(self):
         self.emitters_detectors_interval = lambda value : self.emitters_detectors_scale.config(label=(int(value)))
-        self.emitters_detectors_scale = Scale(self, from_=1, to=300, length=400, orient=HORIZONTAL, showvalue=False, command=self.emitters_detectors_interval)
+        self.emitters_detectors_scale = Scale(self, from_=1, to=720, length=400, orient=HORIZONTAL, showvalue=False, command=self.emitters_detectors_interval)
         self.emitters_detectors_scale.set(25)
         self.emitters_detectors_scale.grid(row=2, column=1, columnspan=2, padx=10, pady=10) 
 
@@ -220,7 +221,7 @@ class StartFrame(Frame):
 
     def rangeScale(self):
         self.range_interval = lambda value : self.range_scale.config(label=int(value))
-        self.range_scale = Scale(self, from_=1, to=180, length=400, orient=HORIZONTAL, showvalue=False, command=self.range_interval)
+        self.range_scale = Scale(self, from_=1, to=270, length=400, orient=HORIZONTAL, showvalue=False, command=self.range_interval)
         self.range_scale.set(180)
         self.range_scale.grid(row=3, column=1, columnspan=2, padx=10, pady=10)
 

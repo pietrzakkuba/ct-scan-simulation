@@ -1,3 +1,5 @@
+import time
+
 import matplotlib.pyplot as plt
 import math
 import pydicom as dcm
@@ -7,6 +9,7 @@ from bresenham import bresenham
 import matplotlib.image as mpimg
 from skimage.color import rgb2gray
 import cv2
+
 
 class Position:
     def __init__(self):
@@ -48,27 +51,21 @@ class Chord:
         self.detector.y = round(r * math.sin(phase + math.pi - l / 2 + self.id * l / n))
 
 
-def normalize(image): #do wywalenia - 2 lepsze
-    maximum = max(map(lambda x: max(x), image))
-    for i in range(len(image)):
-        image[i] = image[i] / maximum
-    return image
-
-
-
 def normalize2(image):
     return image / max(map(lambda x: max(x), image))
 
+
 def createFilter(n):
     filtertab = []
-    tab = [i for i in range(-n, n+1)]
+    tab = [i for i in range(-n, n + 1)]
     for i in tab:
         if i % 2:
             filtertab.append((-4 / (math.pi ** 2)) / (i ** 2))
         else:
             filtertab.append(0)
-    filtertab[n]=1
+    filtertab[n] = 1
     return filtertab
+
 
 def applyFilter(sinogram, n):
     new_sinogram = []
@@ -76,6 +73,7 @@ def applyFilter(sinogram, n):
     for x in sinogram:
         new_sinogram.append(np.convolve(x, filterb, 'same'))
     return new_sinogram
+
 
 def read_file(path):
     if path.split('.')[-1] == 'dcm':
@@ -117,11 +115,13 @@ def radon(img, step, n, l):
     return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
 
-def iradon(sinogram, alpha, r, n, l, height, width):        
+def iradon(sinogram, alpha, r, n, l, height, width, filter):
+    l = math.radians(l)
     rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
     rimg_list = list()
-    sinogram = applyFilter(sinogram, 20)
+    if filter:
+        sinogram = applyFilter(sinogram, 20)
     for i in range(len(alpha)):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
@@ -153,5 +153,65 @@ def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, 
     ds.PhotometricInterpretation = 'MONOCHROME2'
     ds.is_little_endian = True
     ds.is_implicit_VR = True
-    
+
     ds.save_as(filename)
+
+
+def testing(img, emdet=180, skany=180, rozpietosc=180):
+    global indeks
+    sinogram, sinogram_resized_list, alpha, r, l, height, width = radon(img, 180 / skany, emdet,
+                                                                        rozpietosc)
+    cv2.imwrite(
+        "./results/" + str(indeks) + "1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + ".jpg",
+        cv2.convertScaleAbs(sinogram, alpha=(255.0)))
+
+    cv2.imwrite("./results/" + str(indeks) + "2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
+        skany) + "_rozpietosc=" + str(
+        rozpietosc) + ".jpg", cv2.convertScaleAbs(sinogram_resized_list[-1], alpha=(255.0)))
+
+    rimg_list = iradon(sinogram, alpha, r, emdet, rozpietosc, height, width, False)
+    cv2.imwrite(
+        "./results/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + "filtr=False.jpg",
+        cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
+    rimg_list = iradon(sinogram, alpha, r, emdet, rozpietosc, height, width, True)
+    cv2.imwrite(
+        "./results/" + str(indeks) + "3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc) + "filtr=True.jpg",
+        cv2.convertScaleAbs(rimg_list[-1], alpha=(255.0)))
+    indeks += 1
+
+# indeks = 20           #ustawic na 1 jesli poczatek testow
+# img, name, sex, age, date, comment = read_file("./test/Shepp_logan.jpg")
+#
+# t = time.localtime()
+# current_time = time.strftime("%H:%M:%S", t)
+# print(current_time)
+#
+# testing(img)
+#
+# for i in range(90, 721, 90):
+#     testing(img, emdet=i)
+#     print("emdet =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
+
+# for i in range(90, 721, 90):
+#     testing(img, skany=i)
+#     print("skany =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
+
+# for i in range(45, 271, 45):
+#     testing(img, rozpietosc=i)
+#     print("rozpietosc =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
+
+# t = time.localtime()
+# current_time = time.strftime("%H:%M:%S", t)
+# print(current_time)
