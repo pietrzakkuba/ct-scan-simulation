@@ -22,6 +22,7 @@ class App(Tk):
         self.sinogram = None
         self.sinogram_resized = list()
         self.final_image = list()
+        self.final_image_filtered = list()
         self.alpha = None
         self.r = None
         self.l = None
@@ -32,6 +33,10 @@ class App(Tk):
         self.age = None
         self.date = None
         self.comment = None
+        self.check_variable = BooleanVar()
+        self.check_variable.set(False)
+        self.check_variable_save = BooleanVar()
+        self.check_variable_save.set(False)
         StartFrame(self).pack() 
 
 class LoadedImageFrame(Frame):
@@ -104,25 +109,39 @@ class FinalImageFrame(Frame):
         self.a_final_image = self.f_final_image.add_subplot(111)
         self.canvas_final_image = FigureCanvasTkAgg(self.f_final_image, self)
         self.image_widget = self.canvas_final_image.get_tk_widget()
-        if not len(self.master.final_image):
-            self.master.final_image = sim.iradon(
-                self.master.sinogram,
-                self.master.alpha,
-                self.master.r,
-                self.master.emitters_detectors,
-                self.master.l,
-                self.master.height,
-                self.master.width,
-                True
-                )
-            
-        self.scale()
-        self.showImage()
+        if not self.master.check_variable.get():
+            if not len(self.master.final_image):
+                self.master.final_image = sim.iradon(
+                    self.master.sinogram,
+                    self.master.alpha,
+                    self.master.r,
+                    self.master.emitters_detectors,
+                    self.master.l,
+                    self.master.height,
+                    self.master.width,
+                    False
+                    )
+            self.image = self.master.final_image
+        else:
+            if not len(self.master.final_image_filtered):
+                self.master.final_image_filtered = sim.iradon(
+                    self.master.sinogram,
+                    self.master.alpha,
+                    self.master.r,
+                    self.master.emitters_detectors,
+                    self.master.l,
+                    self.master.height,
+                    self.master.width,
+                    True
+                    )
+            self.image = self.master.final_image_filtered
+        self.scaling()
         self.goBackButton()
+        self.showImage()
         self.setImageButton()
         
         
-    def scale(self):
+    def scaling(self):
         self.scale = Scale(self, from_=1, to=100, length=600, orient=VERTICAL, showvalue=True)
         self.scale.set(100)
         self.scale.grid(row=0, column=0)
@@ -130,8 +149,8 @@ class FinalImageFrame(Frame):
 
     def showImage(self):
         self.image_widget.grid_forget()
-        self.step = int(self.scale.get() * (len(self.master.final_image) / 100)) - 1
-        self.a_final_image.imshow(self.master.final_image[self.step], cmap='gray')
+        self.step = int(self.scale.get() * (len(self.image) / 100)) - 1
+        self.a_final_image.imshow(self.image[self.step], cmap='gray')
         self.canvas_final_image.draw()
         self.image_widget.grid(row=0, column=1)  
         
@@ -166,6 +185,9 @@ class StartFrame(Frame):
         self.master.sinogram = None
         self.master.sinogram_resized = list()
         self.master.final_image = list()
+        self.master.final_image_filtered = list()
+        self.master.check_variable.set(False)
+        self.master.check_variable_save.set(False)
         self.master.alpha = None
         self.master.r = None
         self.master.l = None
@@ -247,6 +269,8 @@ class MainFrame(Frame):
         self.generateSinogramButton()
         self.generateFinalImageButton()
         self.saveButton()
+        self.filterCheckbox()
+        self.saveCheckbox()
         if from_start:
             (
                 self.master.original_image,
@@ -257,7 +281,16 @@ class MainFrame(Frame):
                 self.master.comment
             ) = sim.read_file(self.master.path_to_file)
         self.setPatientInfo()
+        
+    def filterCheckbox(self):
+        self.checkbox = Checkbutton(self, text='Apply convolution filter', variable=self.master.check_variable, command=self.generateFinalImageButtonForget)
+        self.checkbox.grid(row=4, column=0, padx=10, pady=10, sticky='W')
 
+    def saveCheckbox(self):
+        self.checkbox = Checkbutton(self, text='Use filtered image on save', variable=self.master.check_variable_save, command=self.saveButtonForget)
+        self.checkbox.grid(row=6, column=3, padx=10, pady=10, sticky='W')
+
+    
     def showLoadedImage(self):
         self.save()
         self.destroy()
@@ -293,14 +326,26 @@ class MainFrame(Frame):
         FinalImageFrame(self.master).pack()
 
     def generateFinalImageButton(self):
-        if self.master.sinogram is None:
-            self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage, state='disabled')
-        elif self.master.final_image == list():
-            self.calculate_final_image_button = Button(self, text='Generate final image', command=self.generateFinalImage)
+        if not self.master.check_variable.get():
+            if self.master.sinogram is None:
+                self.calculate_final_image_button = Button(self, text='Generate final image (without filtering)', command=self.generateFinalImage, state='disabled')
+            elif self.master.final_image == list():
+                self.calculate_final_image_button = Button(self, text='Generate final image (without filtering)', command=self.generateFinalImage)
+            else:
+                self.calculate_final_image_button = Button(self, text='Show final image (without filtering)', command=self.generateFinalImage)
         else:
-            self.calculate_final_image_button = Button(self, text='Show final image', command=self.generateFinalImage)
+            if self.master.sinogram is None:
+                self.calculate_final_image_button = Button(self, text='Generate final image (with filtering)', command=self.generateFinalImage, state='disabled')
+            elif self.master.final_image_filtered == list():
+                self.calculate_final_image_button = Button(self, text='Generate final image (with filtering)', command=self.generateFinalImage)
+            else:
+                self.calculate_final_image_button = Button(self, text='Show final image (with filtering)', command=self.generateFinalImage)
         self.calculate_final_image_button.grid(row=3, column=0, padx=10, pady=10, sticky='W')
           
+    def generateFinalImageButtonForget(self):
+        self.calculate_final_image_button.grid_forget()
+        self.generateFinalImageButton()
+    
     def today(self):
         self.date_entry.delete(1.0, END)
         self.date_entry.insert(END, str(date.today()))
@@ -362,14 +407,28 @@ class MainFrame(Frame):
         self.save()    
         self.file_to_save = filedialog.asksaveasfile(mode='w', defaultextension='.dcm')
         if self.file_to_save is not None:
-            sim.write_dicom_file(self.file_to_save.name, self.master.final_image[-1], self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment)
-
+            if not self.master.check_variable_save.get():
+                sim.write_dicom_file(self.file_to_save.name, self.master.final_image[-1], self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment)
+            else:
+                sim.write_dicom_file(self.file_to_save.name, self.master.final_image_filtered[-1], self.master.name, self.master.sex, self.master.age, self.master.date, self.master.comment)
+                                
     def saveButton(self):
-        if not len(self.master.final_image):
-            save_button = Button(self, text='Save as DICOM', command=self.saveDicom, state='disabled')
+        if not self.master.check_variable_save.get():
+            if not len(self.master.final_image):
+                self.save_button = Button(self, text='Save as DICOM', command=self.saveDicom, state='disabled')
+            else:
+                self.save_button = Button(self, text='Save as DICOM', command=self.saveDicom)
         else:
-            save_button = Button(self, text='Save as DICOM', command=self.saveDicom)
-        save_button.grid(row=6, column=3, padx=10, pady=10, sticky='W')
+            if not len(self.master.final_image_filtered):
+                self.save_button = Button(self, text='Save as DICOM (filtered)', command=self.saveDicom, state='disabled')
+            else:
+                self.save_button = Button(self, text='Save as DICOM (filtered)', command=self.saveDicom)
+        self.save_button.grid(row=6, column=3, padx=10, pady=10, sticky='E')
+      
+    def saveButtonForget(self):
+        self.save_button.grid_forget()
+        self.saveButton()
+     
       
 
 root = App()
