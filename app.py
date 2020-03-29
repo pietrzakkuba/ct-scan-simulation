@@ -154,8 +154,7 @@ class FinalImageFrame(Frame):
     def showImage(self):
         self.image_widget.grid_forget()
         self.step = int(self.scale.get() * (len(self.image) / 100)) - 1
-        fixedImage=self.image[self.step]
-        fixedImage[fixedImage<0]=0
+        fixedImage=sim.fixNegative(self.image[self.step])
         self.a_final_image.imshow(fixedImage, cmap='gray')
         self.canvas_final_image.draw()
         self.image_widget.grid(row=0, column=1)  

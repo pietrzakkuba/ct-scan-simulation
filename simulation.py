@@ -117,7 +117,7 @@ def read_file(path):
 
 
 def rmse(original, reconstruction):
-    reconstruction[reconstruction < 0] = 0
+    reconstruction=fixNegative(reconstruction)
     return np.sqrt(np.mean((original - reconstruction) ** 2))
 
 
@@ -132,6 +132,8 @@ def radon(img, step, n, l):
     sinogram_resized_list = list()
     size = len(alpha)
     everyeach = math.floor(size / 100)
+    if not everyeach:
+        everyeach = 0
     for i in range(size):
         for j in range(len(chords)):
             chords[j].update(alpha[i], r, l, n)
@@ -154,6 +156,9 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
         sinogram = applyFilter(sinogram, 20)
     size = len(alpha)
     everyeach = math.floor(size / 100)
+    if not everyeach:
+        everyeach=0
+
     for i in range(size):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
@@ -164,6 +169,10 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
     rimg_list.pop()
     rimg_list.append(rimg.copy())
     return rimg_list, rmse_list
+
+def fixNegative(img):
+    img[img<0]=0
+    return img
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
     file_meta = Dataset()
@@ -211,11 +220,11 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
     rimg_list, rmse1 = iradon(img, sinogram, alpha, r, emdet, l, height, width, False)
     plt.imsave(
         "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=False.jpg", rimg_list[-1], cmap="gray")
+            rozpietosc) + "filtr=False_rmse="+str(rmse1[-1])+".jpg", fixNegative(rimg_list[-1]), cmap="gray")
     rimg_list, rmse2 = iradon(img, sinogram, alpha, r, emdet, l, height, width, True)
     plt.imsave(
         "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=True.jpg", rimg_list[-1], cmap="gray")
+            rozpietosc) + "filtr=True_rmse="+str(rmse2[-1])+".jpg", fixNegative(rimg_list[-1]), cmap="gray")
     plt.plot(rmse1)
     plt.plot(rmse2)
     plt.savefig(
@@ -229,36 +238,36 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
 
     indeks += 1
 
-# indeks = 1  # ustawic na 1 jesli poczatek testow
-# img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
-#
-# t = time.localtime()
-# current_time = time.strftime("%H:%M:%S", t)
-# print(current_time)
-#
-# testing(img)
-#
-# for i in range(90, 721, 90):
-#     testing(img, emdet=i)
-#     print("emdet =", i)
-#     t = time.localtime()
-#     current_time = time.strftime("%H:%M:%S", t)
-#     print(current_time)
-#
-# for i in range(90, 721, 90):
-#     testing(img, skany=i)
-#     print("skany =", i)
-#     t = time.localtime()
-#     current_time = time.strftime("%H:%M:%S", t)
-#     print(current_time)
-#
-# for i in range(45, 271, 45):
-#     testing(img, rozpietosc=i)
-#     print("rozpietosc =", i)
-#     t = time.localtime()
-#     current_time = time.strftime("%H:%M:%S", t)
-#     print(current_time)
-#
-# t = time.localtime()
-# current_time = time.strftime("%H:%M:%S", t)
-# print(current_time)
+indeks = 1  # ustawic na 1 jesli poczatek testow
+img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
+
+t = time.localtime()
+current_time = time.strftime("%H:%M:%S", t)
+print(current_time)
+
+testing(img)
+
+for i in range(90, 721, 90):
+    testing(img, emdet=i)
+    print("emdet =", i)
+    t = time.localtime()
+    current_time = time.strftime("%H:%M:%S", t)
+    print(current_time)
+
+for i in range(90, 721, 90):
+    testing(img, skany=i)
+    print("skany =", i)
+    t = time.localtime()
+    current_time = time.strftime("%H:%M:%S", t)
+    print(current_time)
+
+for i in range(45, 271, 45):
+    testing(img, rozpietosc=i)
+    print("rozpietosc =", i)
+    t = time.localtime()
+    current_time = time.strftime("%H:%M:%S", t)
+    print(current_time)
+
+t = time.localtime()
+current_time = time.strftime("%H:%M:%S", t)
+print(current_time)
