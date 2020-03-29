@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import filedialog
 import pydicom as dcm
-import matplotlib.pyplot as plt
 import simulation as sim
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -173,10 +172,26 @@ class FinalImageFrame(Frame):
 class RMSEFrame(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
+        self.a=self.master.final_image_rmse
+        self.b=self.master.final_image_filtered_rmse
         self.f_image = Figure(figsize=(6, 6), dpi=100)
         self.a_image = self.f_image.add_subplot(111)
-        self.a_image.imshow(self.master.original_image, cmap='gray')
-        print(self.master.final_image_rmse, self.master.final_image_filtered_rmse)
+        self.a_image.set_ylim([0, 1])
+        self.a_image.set_xticklabels([])
+        self.a_image.set_xlabel('0 - 180 [degrees]')
+        self.a_image.grid(True)
+        if len(self.a) and len(self.b):
+            self.a_image.plot(self.a)
+            self.a_image.plot(self.b)
+            self.a_image.legend(["bez filtra", "z filtrem"])
+        elif len(self.a):
+            self.a_image.plot(self.a)
+            self.a_image.legend(["bez filtra"])
+        elif len(self.b):
+            self.a_image.plot(self.b)
+            self.a_image.legend(["z filtrem"])
+
+        
         self.canvas = FigureCanvasTkAgg(self.f_image, self)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0)
