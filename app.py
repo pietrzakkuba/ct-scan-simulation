@@ -12,7 +12,7 @@ from datetime import date
 class App(Tk):
     def __init__(self):
         Tk.__init__(self)
-        self.title("CT Scan Simualation")
+        self.title("CT Scan Simulation")
         self.wm_iconbitmap('gui/icon.ico')
         self.path_to_file = ''
         self.step = None
@@ -23,6 +23,8 @@ class App(Tk):
         self.sinogram_resized = list()
         self.final_image = list()
         self.final_image_filtered = list()
+        self.final_image_rmse = list()
+        self.final_image_filtered_rmse = list()
         self.alpha = None
         self.r = None
         self.l = None
@@ -111,7 +113,8 @@ class FinalImageFrame(Frame):
         self.image_widget = self.canvas_final_image.get_tk_widget()
         if not self.master.check_variable.get():
             if not len(self.master.final_image):
-                self.master.final_image = sim.iradon(
+                self.master.final_image, self.final_image_rmse = sim.iradon(
+                    self.master.original_image,
                     self.master.sinogram,
                     self.master.alpha,
                     self.master.r,
@@ -124,7 +127,8 @@ class FinalImageFrame(Frame):
             self.image = self.master.final_image
         else:
             if not len(self.master.final_image_filtered):
-                self.master.final_image_filtered = sim.iradon(
+                self.master.final_image_filtered, self.master.final_image_filtered_rmsec = sim.iradon(
+                    self.master.original_image,
                     self.master.sinogram,
                     self.master.alpha,
                     self.master.r,
@@ -150,7 +154,9 @@ class FinalImageFrame(Frame):
     def showImage(self):
         self.image_widget.grid_forget()
         self.step = int(self.scale.get() * (len(self.image) / 100)) - 1
-        self.a_final_image.imshow(self.image[self.step], cmap='gray')
+        fixedImage=self.image[self.step]
+        fixedImage[fixedImage<0]=0
+        self.a_final_image.imshow(fixedImage, cmap='gray')
         self.canvas_final_image.draw()
         self.image_widget.grid(row=0, column=1)  
         
@@ -271,6 +277,7 @@ class MainFrame(Frame):
         self.saveButton()
         self.filterCheckbox()
         self.saveCheckbox()
+        self.analysisButton()
         if from_start:
             (
                 self.master.original_image,
@@ -290,7 +297,6 @@ class MainFrame(Frame):
         self.checkbox = Checkbutton(self, text='Use filtered image on save', variable=self.master.check_variable_save, command=self.saveButtonForget)
         self.checkbox.grid(row=6, column=3, padx=10, pady=10, sticky='W')
 
-    
     def showLoadedImage(self):
         self.save()
         self.destroy()
@@ -299,7 +305,16 @@ class MainFrame(Frame):
     def showLoadedImageButton(self):
         self.loaded_image_button = Button(self, text='Show loaded image', command=self.showLoadedImage)
         self.loaded_image_button.grid(row=1, column=0, padx=10, pady=10, sticky='W')       
-        
+
+    def analysisButton(self):
+        self.analysis_button=Button(self, text='Show RMSE Analysis', command=self.showRMSEAnalysis)
+        self.analysis_button.grid(row=6, column=0, padx=10, pady=10, sticky='W')
+
+    def showRMSEAnalysis(self):
+        print("dddd")
+        # self.destroy()
+        # RMSEFrame(self.master).pack()
+
     def back(self):
         self.destroy()
         StartFrame(self.master, True).pack()
@@ -428,7 +443,24 @@ class MainFrame(Frame):
     def saveButtonForget(self):
         self.save_button.grid_forget()
         self.saveButton()
-     
+
+# class RMSEFrame(Frame):
+#     def __init__(self, master):
+#         Frame.__init__(self, master)
+#         self.f_image = Figure(figsize=(6, 6), dpi=100)
+#         self.a_image = self.f_image.add_subplot(111)
+#         self.a_image.imshow(self.master.original_image, cmap='gray')
+#         self.canvas = FigureCanvasTkAgg(self.f_image, self)
+#         self.canvas.draw()
+#         self.canvas.get_tk_widget().pack()
+#         self.goBackButton()
+#
+#     def goBack(self):
+#         self.destroy()
+#         MainFrame(self.master).pack()
+#
+#     def goBackButton(self):
+#         Button(self, text='Back', command=self.goBack).grid(row=1, column=1)
       
 
 root = App()

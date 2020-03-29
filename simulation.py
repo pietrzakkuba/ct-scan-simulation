@@ -68,13 +68,12 @@ def createFilter(n):
 
 
 def applyFilter(sinogram, n):
-    print(list(sinogram[0]))
     new_sinogram = []
     filterb = createFilter(n)
     for x in sinogram:
         test = np.convolve(x, filterb, 'same')
         new_sinogram.append(test)
-    new_sinogram=np.asarray(new_sinogram)
+    new_sinogram = np.asarray(new_sinogram)
     return new_sinogram
 
 
@@ -97,6 +96,11 @@ def read_file(path):
         date = None
         comment = None
     return (img, name, sex, age, date, comment)
+
+
+def rmse(original, reconstruction):
+    reconstruction[reconstruction < 0] = 0
+    return np.sqrt(np.mean((original - reconstruction) ** 2))
 
 
 def radon(img, step, n, l):
@@ -123,10 +127,11 @@ def radon(img, step, n, l):
     return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
 
-def iradon(sinogram, alpha, r, n, l, height, width, filter):
+def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
     rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
     rimg_list = list()
+    rmse_list = []
     if filter:
         sinogram = applyFilter(sinogram, 20)
     size = len(alpha)
@@ -135,15 +140,12 @@ def iradon(sinogram, alpha, r, n, l, height, width, filter):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
             rimg = rChords[j].drawBresenham(rimg, sinogram[i][j], width, height)
-        if not i % everyeach: 
+        if not i % everyeach:
             rimg_list.append(rimg.copy())
+        rmse_list.append(rmse(img, rimg))
     rimg_list.pop()
     rimg_list.append(rimg.copy())
-    test=np.asarray(rimg_list[-1])
-    test[test<0]=0
-    rimg_list[-1]=test
-    return rimg_list
-
+    return rimg_list, rmse_list
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
     file_meta = Dataset()
@@ -177,27 +179,36 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
     sinogram, sinogram_resized_list, alpha, r, l, height, width = radon(img, 180 / skany, emdet,
                                                                         rozpietosc)
     plt.imsave(
-        "./testing/" + str(indeks) + "_1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        "./results/" + str(indeks) + "_1sinogram_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
             rozpietosc) + ".jpg", sinogram, cmap="gray")
 
-    plt.imsave("./testing/" + str(indeks) + "_2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
+    plt.imsave("./results/" + str(indeks) + "_2sinogram_resized_emdet=" + str(emdet) + "_skany=" + str(
         skany) + "_rozpietosc=" + str(
         rozpietosc) + ".jpg", sinogram_resized_list[-1], cmap="gray")
 
-    rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, False)
-    print(type(rimg_list[-1]))
+    rimg_list, rmse1 = iradon(img, sinogram, alpha, r, emdet, l, height, width, False)
     plt.imsave(
-        "./testing/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
             rozpietosc) + "filtr=False.jpg", rimg_list[-1], cmap="gray")
-
-    rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, True)
+    rimg_list, rmse2 = iradon(img, sinogram, alpha, r, emdet, l, height, width, True)
     plt.imsave(
-        "./testing/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
             rozpietosc) + "filtr=True.jpg", rimg_list[-1], cmap="gray")
+    plt.plot(rmse1)
+    plt.plot(rmse2)
+    plt.savefig(
+        "./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc))
+    plt.clf()
+    np.save("./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        rozpietosc), rmse1)
+    np.save("./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        rozpietosc) + "filtr", rmse2)
+
     indeks += 1
 
 # indeks = 1  # ustawic na 1 jesli poczatek testow
-# img, name, sex, age, date, comment = read_file("./test/Shepp_logan.jpg")
+# img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
 #
 # t = time.localtime()
 # current_time = time.strftime("%H:%M:%S", t)
