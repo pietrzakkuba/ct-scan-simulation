@@ -145,9 +145,6 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
         rmse_list.append(rmse(img, rimg))
     rimg_list.pop()
     rimg_list.append(rimg.copy())
-    test = np.asarray(rimg_list[-1])
-    test[test < 0] = 0
-    rimg_list[-1] = test
     return rimg_list, rmse_list
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
