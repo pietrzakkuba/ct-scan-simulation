@@ -73,7 +73,7 @@ def applyFilter(sinogram, n):
     for x in sinogram:
         test = np.convolve(x, filterb, 'same')
         new_sinogram.append(test)
-    new_sinogram=np.asarray(new_sinogram)
+    new_sinogram = np.asarray(new_sinogram)
     return new_sinogram
 
 
@@ -98,6 +98,11 @@ def read_file(path):
     return (img, name, sex, age, date, comment)
 
 
+def rmse(original, reconstruction):
+    reconstruction[reconstruction < 0] = 0
+    return np.sqrt(np.mean((original - reconstruction) ** 2))
+
+
 def radon(img, step, n, l):
     l = math.radians(l)
     height, width = img.shape[:2]
@@ -117,10 +122,11 @@ def radon(img, step, n, l):
     return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
 
-def iradon(sinogram, alpha, r, n, l, height, width, filter):
+def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
     rimg = np.zeros((height, width))
     rChords = [Chord(i) for i in range(n)]
     rimg_list = list()
+    rmse_list = []
     if filter:
         sinogram = applyFilter(sinogram, 20)
     for i in range(len(alpha)):
@@ -128,11 +134,11 @@ def iradon(sinogram, alpha, r, n, l, height, width, filter):
             rChords[j].update(alpha[i], r, l, n)
             rimg = rChords[j].drawBresenham(rimg, sinogram[i][j], width, height)
         rimg_list.append(rimg.copy())
-
-    test=np.asarray(rimg_list[-1])
-    test[test<0]=0
-    rimg_list[-1]=test
-    return rimg_list
+        rmse_list.append(rmse(img, rimg))
+    test = np.asarray(rimg_list[-1])
+    test[test < 0] = 0
+    rimg_list[-1] = test
+    return rimg_list, rmse_list
 
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
@@ -174,47 +180,57 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
         skany) + "_rozpietosc=" + str(
         rozpietosc) + ".jpg", sinogram_resized_list[-1], cmap="gray")
 
-    rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, False)
+    rimg_list, rmse1 = iradon(img, sinogram, alpha, r, emdet, l, height, width, False)
     plt.imsave(
         "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
             rozpietosc) + "filtr=False.jpg", rimg_list[-1], cmap="gray")
-
-    rimg_list = iradon(sinogram, alpha, r, emdet, l, height, width, True)
+    rimg_list, rmse2 = iradon(img, sinogram, alpha, r, emdet, l, height, width, True)
     plt.imsave(
         "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
             rozpietosc) + "filtr=True.jpg", rimg_list[-1], cmap="gray")
+    plt.plot(rmse1)
+    plt.plot(rmse2)
+    plt.savefig(
+        "./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+            rozpietosc))
+    plt.clf()
+    np.save("./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        rozpietosc), rmse1)
+    np.save("./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
+        rozpietosc) + "filtr", rmse2)
+
     indeks += 1
 
-indeks = 1  # ustawic na 1 jesli poczatek testow
-img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
-
-t = time.localtime()
-current_time = time.strftime("%H:%M:%S", t)
-print(current_time)
-
-testing(img)
-
-for i in range(90, 721, 90):
-    testing(img, emdet=i)
-    print("emdet =", i)
-    t = time.localtime()
-    current_time = time.strftime("%H:%M:%S", t)
-    print(current_time)
-
-for i in range(90, 721, 90):
-    testing(img, skany=i)
-    print("skany =", i)
-    t = time.localtime()
-    current_time = time.strftime("%H:%M:%S", t)
-    print(current_time)
-
-for i in range(45, 271, 45):
-    testing(img, rozpietosc=i)
-    print("rozpietosc =", i)
-    t = time.localtime()
-    current_time = time.strftime("%H:%M:%S", t)
-    print(current_time)
-
-t = time.localtime()
-current_time = time.strftime("%H:%M:%S", t)
-print(current_time)
+# indeks = 1  # ustawic na 1 jesli poczatek testow
+# img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
+#
+# t = time.localtime()
+# current_time = time.strftime("%H:%M:%S", t)
+# print(current_time)
+#
+# testing(img)
+#
+# for i in range(90, 721, 90):
+#     testing(img, emdet=i)
+#     print("emdet =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
+#
+# for i in range(90, 721, 90):
+#     testing(img, skany=i)
+#     print("skany =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
+#
+# for i in range(45, 271, 45):
+#     testing(img, rozpietosc=i)
+#     print("rozpietosc =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
+#
+# t = time.localtime()
+# current_time = time.strftime("%H:%M:%S", t)
+# print(current_time)

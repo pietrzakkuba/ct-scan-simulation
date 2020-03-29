@@ -12,7 +12,7 @@ from datetime import date
 class App(Tk):
     def __init__(self):
         Tk.__init__(self)
-        self.title("CT Scan Simualation")
+        self.title("CT Scan Simulation")
         self.wm_iconbitmap('gui/icon.ico')
         self.path_to_file = ''
         self.step = None
@@ -23,6 +23,8 @@ class App(Tk):
         self.sinogram_resized = list()
         self.final_image = list()
         self.final_image_filtered = list()
+        self.final_image_rmse = list()
+        self.final_image_filtered_rmse = list()
         self.alpha = None
         self.r = None
         self.l = None
@@ -111,7 +113,8 @@ class FinalImageFrame(Frame):
         self.image_widget = self.canvas_final_image.get_tk_widget()
         if not self.master.check_variable.get():
             if not len(self.master.final_image):
-                self.master.final_image = sim.iradon(
+                self.master.final_image, self.final_image_rmse = sim.iradon(
+                    self.master.original_image,
                     self.master.sinogram,
                     self.master.alpha,
                     self.master.r,
@@ -124,7 +127,8 @@ class FinalImageFrame(Frame):
             self.image = self.master.final_image
         else:
             if not len(self.master.final_image_filtered):
-                self.master.final_image_filtered = sim.iradon(
+                self.master.final_image_filtered, self.master.final_image_filtered_rmsec = sim.iradon(
+                    self.master.original_image,
                     self.master.sinogram,
                     self.master.alpha,
                     self.master.r,
