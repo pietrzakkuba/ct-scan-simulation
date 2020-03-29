@@ -99,7 +99,8 @@ def read_file(path):
 
 
 def rmse(original, reconstruction):
-    reconstruction=fixNegative(reconstruction)
+    reconstruction = fixNegative(reconstruction)
+    reconstruction = normalize2(reconstruction)
     return np.sqrt(np.mean((original - reconstruction) ** 2))
 
 
@@ -115,16 +116,17 @@ def radon(img, step, n, l):
     size = len(alpha)
     everyeach = math.floor(size / 100)
     if not everyeach:
-        everyeach = 0
+        everyeach = 1
     for i in range(size):
         for j in range(len(chords)):
             chords[j].update(alpha[i], r, l, n)
             sinogram[i][j] = chords[j].calcBresenham(width, height, img)
-        if not i % everyeach: 
-            sinogram_resized_list.append(cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR))
+        if not i % everyeach:
+            sinogram_resized_list.append(
+                cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR))
     sinogram_resized_list.pop()
     sinogram_resized_list.append(cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR))
-    
+
     sinogram = normalize2(sinogram)
     return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
@@ -139,7 +141,7 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
     size = len(alpha)
     everyeach = math.floor(size / 100)
     if not everyeach:
-        everyeach=0
+        everyeach = 1
 
     for i in range(size):
         for j in range(len(rChords)):
@@ -152,9 +154,11 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
     rimg_list.append(rimg.copy())
     return rimg_list, rmse_list
 
+
 def fixNegative(img):
-    img[img<0]=0
+    img[img < 0] = 0
     return img
+
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
     file_meta = Dataset()
@@ -198,13 +202,14 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
     rimg_list, rmse1 = iradon(img, sinogram, alpha, r, emdet, l, height, width, False)
     plt.imsave(
         "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=False_rmse="+str(rmse1[-1])+".jpg", fixNegative(rimg_list[-1]), cmap="gray")
+            rozpietosc) + "filtr=False_rmse=" + str(rmse1[-1]) + ".jpg", fixNegative(rimg_list[-1]), cmap="gray")
     rimg_list, rmse2 = iradon(img, sinogram, alpha, r, emdet, l, height, width, True)
     plt.imsave(
         "./results/" + str(indeks) + "_3rimg_list_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
-            rozpietosc) + "filtr=True_rmse="+str(rmse2[-1])+".jpg", fixNegative(rimg_list[-1]), cmap="gray")
+            rozpietosc) + "filtr=True_rmse=" + str(rmse2[-1]) + ".jpg", fixNegative(rimg_list[-1]), cmap="gray")
     plt.plot(rmse1)
     plt.plot(rmse2)
+    plt.legend(["bez filtru", "z filtrem"])
     plt.savefig(
         "./results/" + str(indeks) + "_4rmse_emdet=" + str(emdet) + "_skany=" + str(skany) + "_rozpietosc=" + str(
             rozpietosc))
@@ -216,13 +221,12 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
 
     indeks += 1
 
+
 indeks = 1  # ustawic na 1 jesli poczatek testow
 img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
 
 t = time.localtime()
 current_time = time.strftime("%H:%M:%S", t)
-print(current_time)
-
 testing(img)
 
 for i in range(90, 721, 90):
