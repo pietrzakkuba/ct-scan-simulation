@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk 
 from PIL import ImageTk, Image
 from datetime import date
+import math
 
 class App(Tk):
     def __init__(self):
@@ -201,6 +202,7 @@ class StartFrame(Frame):
         self.rangeLabel()
         self.rangeScale()
         self.examineButton()
+        self.numberOfScans()
         if from_main:
             self.refresh()
         
@@ -247,44 +249,55 @@ class StartFrame(Frame):
         self.step_label = Label(self, text='Set step [degrees]')
         self.step_label.grid(row=1, column=0, sticky='E', padx=10, pady=10)
     
+    def step_scale_interval(self, value):
+        self.step_scale.config(label='{0:.2f}'.format((int(value) / 20)))
+        self.scans_label.grid_forget()
+        self.numberOfScans()
+    
     def stepScale(self):
-        self.step_scale_interval = lambda value : self.step_scale.config(label=(int(value) / 10))
         self.step_scale = Scale(self, from_=1, to=100, length=400, orient=HORIZONTAL, showvalue=False, command=self.step_scale_interval)
-        self.step_scale.set(10)
+        self.step_scale.set(20)
         self.step_scale.grid(row=1, column=1, columnspan=2, padx=10, pady=10) 
 
     def emittersDetectorsLabel(self):
         self.emitters_detectors_label = Label(self, text='Set number of detectors')
-        self.emitters_detectors_label.grid(row=2, column=0, sticky='E', padx=10, pady=10)
+        self.emitters_detectors_label.grid(row=3, column=0, sticky='E', padx=10, pady=10)
 
     def emittersDetectorsScale(self):
         self.emitters_detectors_interval = lambda value : self.emitters_detectors_scale.config(label=(int(value)))
-        self.emitters_detectors_scale = Scale(self, from_=1, to=720, length=400, orient=HORIZONTAL, showvalue=False, command=self.emitters_detectors_interval)
-        self.emitters_detectors_scale.set(25)
-        self.emitters_detectors_scale.grid(row=2, column=1, columnspan=2, padx=10, pady=10) 
+        self.emitters_detectors_scale = Scale(self, from_=90, to=720, length=400, orient=HORIZONTAL, showvalue=False, command=self.emitters_detectors_interval)
+        self.emitters_detectors_scale.set(180)
+        self.emitters_detectors_scale.grid(row=3, column=1, columnspan=2, padx=10, pady=10) 
 
     def rangeLabel(self):
         self.range_label = Label(self, text='Set range of the detectors-emitters set [degreess]')
-        self.range_label.grid(row=3, column=0, sticky='E', padx=10, pady=10)
+        self.range_label.grid(row=4, column=0, sticky='E', padx=10, pady=10)
 
     def rangeScale(self):
         self.range_interval = lambda value : self.range_scale.config(label=int(value))
         self.range_scale = Scale(self, from_=1, to=270, length=400, orient=HORIZONTAL, showvalue=False, command=self.range_interval)
         self.range_scale.set(180)
-        self.range_scale.grid(row=3, column=1, columnspan=2, padx=10, pady=10)
+        self.range_scale.grid(row=4, column=1, columnspan=2, padx=10, pady=10)
 
     def calculate(self):
         self.master.path_to_file = self.select_entry.get()
-        self.master.step = self.step_scale.get() / 10
+        self.master.step = self.step_scale.get() / 20
         self.master.emitters_detectors = self.emitters_detectors_scale.get()
         self.master.range = self.range_scale.get()
         self.destroy()
-        MainFrame(self.master, True).pack()
+        try:
+            MainFrame(self.master, True).pack()
+        except:
+            None
+        
+    def numberOfScans(self):
+        self.scans_label = Label(self, text='Number of scans: {}'.format(math.floor(180 / (self.step_scale.get() / 20))))
+        self.scans_label.grid(row=2, column=0, sticky='E', padx=0, pady=0)
 
 
     def examineButton(self):
         self.examine_button = Button(self, text='Examine', command=self.calculate)
-        self.examine_button.grid(row=4, column=1, padx=10, pady=20)
+        self.examine_button.grid(row=5, column=1, padx=10, pady=20)
 
 class MainFrame(Frame):
     def __init__(self, master, from_start=False):
@@ -298,16 +311,20 @@ class MainFrame(Frame):
         self.filterCheckbox()
         self.saveCheckbox()
         self.analysisButton()
-        if from_start:
-            (
-                self.master.original_image,
-                self.master.name,
-                self.master.sex,
-                self.master.age,
-                self.master.date,
-                self.master.comment
-            ) = sim.read_file(self.master.path_to_file)
-        self.setPatientInfo()
+        try:
+            if from_start:
+                (
+                    self.master.original_image,
+                    self.master.name,
+                    self.master.sex,
+                    self.master.age,
+                    self.master.date,
+                    self.master.comment
+                ) = sim.read_file(self.master.path_to_file)
+        except:
+            self.back()
+        else:
+            self.setPatientInfo()
         
     def filterCheckbox(self):
         self.checkbox = Checkbutton(self, text='Apply convolution filter', variable=self.master.check_variable, command=self.generateFinalImageButtonForget)

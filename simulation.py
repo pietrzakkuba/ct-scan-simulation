@@ -78,6 +78,7 @@ def applyFilter(sinogram, n):
 
 
 def read_file(path):
+    
     if path.split('.')[-1] == 'dcm':
         dataset = dcm.dcmread(path)
         dataset.file_meta.TransferSyntaxUID = dcm.uid.ImplicitVRLittleEndian
@@ -127,6 +128,7 @@ def radon(img, step, n, l):
     height, width = img.shape[:2]
     r = math.ceil(math.sqrt((height ** 2 + width ** 2)) / 2)  # obliczanie promienia okregu
     alpha = list(np.linspace(0., 180., int(180. / step), endpoint=False))
+    print(len(alpha))
     alpha = list(map(lambda x: math.radians(x), alpha))
     chords = [Chord(i) for i in range(n)]
     sinogram = [[0 for i in range(n)] for j in range(len(alpha))]
@@ -244,34 +246,34 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
     indeks += 1
 
 
-indeks = 1  # ustawic na 1 jesli poczatek testow
-img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
+# indeks = 1  # ustawic na 1 jesli poczatek testow
+# img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
 
-t = time.localtime()
-current_time = time.strftime("%H:%M:%S", t)
-testing(img)
+# t = time.localtime()
+# current_time = time.strftime("%H:%M:%S", t)
+# testing(img)
 
-for i in range(90, 721, 90):
-    testing(img, emdet=i)
-    print("emdet =", i)
-    t = time.localtime()
-    current_time = time.strftime("%H:%M:%S", t)
-    print(current_time)
+# for i in range(90, 721, 90):
+#     testing(img, emdet=i)
+#     print("emdet =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
 
-for i in range(90, 721, 90):
-    testing(img, skany=i)
-    print("skany =", i)
-    t = time.localtime()
-    current_time = time.strftime("%H:%M:%S", t)
-    print(current_time)
+# for i in range(90, 721, 90):
+#     testing(img, skany=i)
+#     print("skany =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
 
-for i in range(45, 271, 45):
-    testing(img, rozpietosc=i)
-    print("rozpietosc =", i)
-    t = time.localtime()
-    current_time = time.strftime("%H:%M:%S", t)
-    print(current_time)
+# for i in range(45, 271, 45):
+#     testing(img, rozpietosc=i)
+#     print("rozpietosc =", i)
+#     t = time.localtime()
+#     current_time = time.strftime("%H:%M:%S", t)
+#     print(current_time)
 
-t = time.localtime()
-current_time = time.strftime("%H:%M:%S", t)
-print(current_time)
+# t = time.localtime()
+# current_time = time.strftime("%H:%M:%S", t)
+# print(current_time)
