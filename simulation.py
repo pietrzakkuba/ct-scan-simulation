@@ -112,12 +112,17 @@ def radon(img, step, n, l):
     chords = [Chord(i) for i in range(n)]
     sinogram = [[0 for i in range(n)] for j in range(len(alpha))]
     sinogram_resized_list = list()
-    for i in range(len(alpha)):
+    size = len(alpha)
+    everyeach = math.floor(size / 100)
+    for i in range(size):
         for j in range(len(chords)):
             chords[j].update(alpha[i], r, l, n)
             sinogram[i][j] = chords[j].calcBresenham(width, height, img)
-        sinogram_resized = cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR)
-        sinogram_resized_list.append(sinogram_resized)
+        if not i % everyeach: 
+            sinogram_resized_list.append(cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR))
+    sinogram_resized_list.pop()
+    sinogram_resized_list.append(cv2.resize(np.float32(sinogram), (width, height), interpolation=cv2.INTER_LINEAR))
+    
     sinogram = normalize2(sinogram)
     return (sinogram, sinogram_resized_list, alpha, r, l, height, width)
 
@@ -129,17 +134,21 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
     rmse_list = []
     if filter:
         sinogram = applyFilter(sinogram, 20)
-    for i in range(len(alpha)):
+    size = len(alpha)
+    everyeach = math.floor(size / 100)
+    for i in range(size):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
             rimg = rChords[j].drawBresenham(rimg, sinogram[i][j], width, height)
-        rimg_list.append(rimg.copy())
+        if not i % everyeach:
+            rimg_list.append(rimg.copy())
         rmse_list.append(rmse(img, rimg))
+    rimg_list.pop()
+    rimg_list.append(rimg.copy())
     test = np.asarray(rimg_list[-1])
     test[test < 0] = 0
     rimg_list[-1] = test
     return rimg_list, rmse_list
-
 
 def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, comment=None):
     file_meta = Dataset()
