@@ -114,6 +114,8 @@ def radon(img, step, n, l):
     sinogram_resized_list = list()
     size = len(alpha)
     everyeach = math.floor(size / 100)
+    if not everyeach:
+        everyeach = 0
     for i in range(size):
         for j in range(len(chords)):
             chords[j].update(alpha[i], r, l, n)
@@ -136,6 +138,9 @@ def iradon(img, sinogram, alpha, r, n, l, height, width, filter):
         sinogram = applyFilter(sinogram, 20)
     size = len(alpha)
     everyeach = math.floor(size / 100)
+    if not everyeach:
+        everyeach=0
+
     for i in range(size):
         for j in range(len(rChords)):
             rChords[j].update(alpha[i], r, l, n)
