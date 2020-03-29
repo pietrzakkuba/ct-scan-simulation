@@ -128,7 +128,6 @@ def radon(img, step, n, l):
     height, width = img.shape[:2]
     r = math.ceil(math.sqrt((height ** 2 + width ** 2)) / 2)  # obliczanie promienia okregu
     alpha = list(np.linspace(0., 180., int(180. / step), endpoint=False))
-    print(len(alpha))
     alpha = list(map(lambda x: math.radians(x), alpha))
     chords = [Chord(i) for i in range(n)]
     sinogram = [[0 for i in range(n)] for j in range(len(alpha))]

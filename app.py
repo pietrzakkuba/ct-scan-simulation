@@ -399,9 +399,9 @@ class MainFrame(Frame):
         self.calculate_final_image_button.grid_forget()
         self.generateFinalImageButton()
     
-    def today(self):
-        self.date_entry.delete(1.0, END)
-        self.date_entry.insert(END, str(date.today()))
+    def text(self, txt, where):
+        where.delete(1.0, END)
+        where.insert(END, txt)
         
     def patientInfo(self):
         self.about_label = Label(self, text='About Patient')
@@ -418,18 +418,22 @@ class MainFrame(Frame):
         self.comment_label = Label(self, text='Comment:')
         self.comment_label.grid(row=5, column=2, padx=10, pady=10, sticky='E')
         
-        self.name_entry = Text(self, width=40, height=1)
-        self.name_entry.grid(row=1, column=3, padx=10, pady=10, sticky='W')
-        self.sex_entry = Text(self, width=40, height=1)
+        self.name_entry = Text(self, width=50, height=1)
+        self.name_entry.grid(row=1, column=3, columnspan=2, padx=10, pady=10, sticky='W')
+        self.sex_entry = Text(self, width=30, height=1)
         self.sex_entry.grid(row=2, column=3, padx=10, pady=10, sticky='W')
+        self.male_button = Button(self, text='Male', command=lambda: self.text('Male', self.sex_entry))
+        self.male_button.grid(row=2, column=4, padx=10, pady=10, sticky='E')
+        self.female_button = Button(self, text='Female', command=lambda: self.text('Female', self.sex_entry))
+        self.female_button.grid(row=2, column=4, padx=10, pady=10, sticky='W')
         self.age_entry = Text(self, width=10, height=1)
-        self.age_entry.grid(row=3, column=3, padx=10, pady=10, sticky='W')
+        self.age_entry.grid(row=3, column=3, columnspan=2, padx=10, pady=10, sticky='W')
         self.date_entry = Text(self, width=30, height=1)
         self.date_entry.grid(row=4, column=3, padx=10, pady=10, sticky='W')
-        self.date_button = Button(self, text='Today', command=self.today)
-        self.date_button.grid(row=4, column=3, padx=10, pady=10, sticky='E')
-        self.comment_entry = Text(self, width=40, height=10)
-        self.comment_entry.grid(row=5, column=3, padx=10, pady=10, sticky='W')
+        self.date_button = Button(self, text='Today', command=lambda: self.text(str(date.today()), self.date_entry))
+        self.date_button.grid(row=4, column=4, padx=10, pady=10, sticky='W')
+        self.comment_entry = Text(self, width=50, height=10)
+        self.comment_entry.grid(row=5, column=3, columnspan=2, padx=10, pady=10, sticky='W')
         
     def setPatientInfo(self):
         self.patientInfo = []
@@ -476,7 +480,7 @@ class MainFrame(Frame):
                 self.save_button = Button(self, text='Save as DICOM\n(filtered image)', command=self.saveDicom, state='disabled')
             else:
                 self.save_button = Button(self, text='Save as DICOM\n(filtered image)', command=self.saveDicom)
-        self.save_button.grid(row=6, column=3, padx=10, pady=10, sticky='E')
+        self.save_button.grid(row=6, column=4, padx=10, pady=10, sticky='E')
       
     def saveButtonForget(self):
         self.save_button.grid_forget()
