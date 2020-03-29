@@ -415,14 +415,14 @@ class MainFrame(Frame):
     def saveButton(self):
         if not self.master.check_variable_save.get():
             if not len(self.master.final_image):
-                self.save_button = Button(self, text='Save as DICOM', command=self.saveDicom, state='disabled')
+                self.save_button = Button(self, text='Save as DICOM (unfiltered image)', command=self.saveDicom, state='disabled')
             else:
-                self.save_button = Button(self, text='Save as DICOM', command=self.saveDicom)
+                self.save_button = Button(self, text='Save as DICOM (unfiltered image)', command=self.saveDicom)
         else:
             if not len(self.master.final_image_filtered):
-                self.save_button = Button(self, text='Save as DICOM (filtered)', command=self.saveDicom, state='disabled')
+                self.save_button = Button(self, text='Save as DICOM (filtered image)', command=self.saveDicom, state='disabled')
             else:
-                self.save_button = Button(self, text='Save as DICOM (filtered)', command=self.saveDicom)
+                self.save_button = Button(self, text='Save as DICOM (filtered image)', command=self.saveDicom)
         self.save_button.grid(row=6, column=3, padx=10, pady=10, sticky='E')
       
     def saveButtonForget(self):
