@@ -81,15 +81,33 @@ def read_file(path):
     if path.split('.')[-1] == 'dcm':
         dataset = dcm.dcmread(path)
         dataset.file_meta.TransferSyntaxUID = dcm.uid.ImplicitVRLittleEndian
-        img = dataset.pixel_array
-        name = dataset.PatientName
-        sex = dataset.PatientSex
-        age = dataset.PatientAge
-        date = dataset.StudyDate
-        comment = dataset.ImageComments
+        try:
+            img = dataset.pixel_array
+        except:
+            img = None
+        try:
+            name = dataset.PatientName
+        except:
+            name = None
+        try:
+            sex = dataset.PatientSex
+        except:
+            sex = None
+        try:
+            age = dataset.PatientAge
+        except:
+            age = None
+        try:
+            date = dataset.StudyDate
+        except:
+            date = None
+        try:
+            comment = dataset.ImageComments
+        except:
+            comment = None
+        print(dataset)
     else:
-        img = mpimg.imread(path)
-        img = rgb2gray(img)
+        img = rgb2gray(mpimg.imread(path))
         name = None
         sex = None
         age = None
@@ -170,7 +188,11 @@ def write_dicom_file(filename, image, name=None, sex=None, age=None, date=None, 
     ds.PhotometricInterpretation = 'MONOCHROME2'
     ds.is_little_endian = True
     ds.is_implicit_VR = True
-
+    ds.Modality = 'CT'
+    ds.InstanceNumber = '1'
+    ds.AcquisitionNumber = '1'
+    ds.ConversionType = 'WSD'
+    ds.ImageType = 'ORIGINAL'
     ds.save_as(filename)
 
 
