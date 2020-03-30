@@ -243,36 +243,3 @@ def testing(img, emdet=180, skany=180, rozpietosc=180):
         rozpietosc) + "filtr", rmse2)
 
     indeks += 1
-
-
-# indeks = 1  # ustawic na 1 jesli poczatek testow
-# img, name, sex, age, date, comment = read_file("./test/SheppLogan_Phantom.svg (1).png")
-
-# t = time.localtime()
-# current_time = time.strftime("%H:%M:%S", t)
-# testing(img)
-
-# for i in range(90, 721, 90):
-#     testing(img, emdet=i)
-#     print("emdet =", i)
-#     t = time.localtime()
-#     current_time = time.strftime("%H:%M:%S", t)
-#     print(current_time)
-
-# for i in range(90, 721, 90):
-#     testing(img, skany=i)
-#     print("skany =", i)
-#     t = time.localtime()
-#     current_time = time.strftime("%H:%M:%S", t)
-#     print(current_time)
-
-# for i in range(45, 271, 45):
-#     testing(img, rozpietosc=i)
-#     print("rozpietosc =", i)
-#     t = time.localtime()
-#     current_time = time.strftime("%H:%M:%S", t)
-#     print(current_time)
-
-# t = time.localtime()
-# current_time = time.strftime("%H:%M:%S", t)
-# print(current_time)
