@@ -106,7 +106,6 @@ def read_file(path):
             comment = dataset.ImageComments
         except:
             comment = None
-        print(dataset)
     else:
         img = rgb2gray(mpimg.imread(path))
         name = None
