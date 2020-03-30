@@ -256,7 +256,7 @@ class StartFrame(Frame):
         self.select_button.grid(row=0, column=2, padx=10, pady=10)
 
     def fileDialog(self):
-        self.master.path_to_file = filedialog.askopenfilename(initialdir='./test', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
+        self.master.path_to_file = filedialog.askopenfilename(initialdir='.', title='Select a file', filetype = (('All files', '*.*'), ('DICOM', '*.dcm'), ('JPEG', '*.jpg'), ('PNG', '*.png')))
         self.select_entry.delete(0, 'end')
         self.select_entry.insert(INSERT, self.master.path_to_file)
 
